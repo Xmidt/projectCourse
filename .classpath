@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="/home/mlschmidt/workspace/AisLib/ais-communication/target/ais-communication-0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/home/mlschmidt/workspace/AisLib/ais-messages/target/ais-messages-0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/home/mlschmidt/workspace/AisLib/ais-utils/target/ais-utils-0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/home/mlschmidt/workspace/e-Navigation/enav-model/target/enav-model-0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/home/mlschmidt/workspace/e-Navigation/enav-service/enav-service-api/target/enav-service-api-0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/home/mlschmidt/workspace/e-Navigation/enav-service/enav-service-common/target/enav-service-common-0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/home/mlschmidt/workspace/e-Navigation/enav-util/target/enav-util-0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
