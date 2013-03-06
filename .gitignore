@@ -1,5 +1,14 @@
 *.class
 
+# Directories #
+/bin
+target
+.settings
+
+# Files settings #
+.project
+.classpath
+
 # Package Files #
 *.jar
 *.war
