@@ -2,13 +2,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import dk.dma.ais.message.AisMessage;
-import dk.dma.ais.message.AisMessage21;			// accept
-import dk.dma.ais.message.AisPositionMessage;	// accept
-import dk.dma.ais.message.AisStaticCommon;		// accept
-import dk.dma.ais.packet.AisPacket;				// readRawTCP
-import dk.dma.ais.reader.AisReader;				// readFile
+import dk.dma.ais.message.AisMessage21;				// accept
+import dk.dma.ais.message.AisPositionMessage;		// accept
+import dk.dma.ais.message.AisStaticCommon;			// accept
+import dk.dma.ais.message.IVesselPositionMessage;	// accept
+import dk.dma.ais.packet.AisPacket;					// readRawTCP
+import dk.dma.ais.reader.AisReader;					// readFile
 import dk.dma.ais.reader.AisStreamReader;
-import dk.dma.ais.reader.AisTcpReader;			// readTCP
+import dk.dma.ais.reader.AisTcpReader;				// readTCP
+import dk.dma.ais.reader.RoundRobinAisTcpReader;	// roundRobinReading
 import dk.dma.enav.util.function.Consumer;
 
 /*
@@ -27,10 +29,11 @@ import dk.dma.enav.util.function.Consumer;
 
 public class ReadMessage {
 
-	private final String logFile = "stream_example.txt";
+	//private final String logFile = "stream_example.txt";
+	private final String logFile = "test.txt";
 	
 	private final String URL = "localhost";
-	private final Integer port = 10001; 
+	private final Integer port = 4001; 
 
 	/*
 	 * A simple example about how to retrieve the message id
@@ -38,13 +41,14 @@ public class ReadMessage {
 	public void readFile() throws FileNotFoundException, InterruptedException{
 		AisReader reader = new AisStreamReader(new FileInputStream(logFile));
 		
-		reader.registerHandler(new Consumer<AisMessage>() {         
+		reader.registerHandler(new Consumer<AisMessage>() {       
 		    @Override
 		    public void accept(AisMessage aisMessage) {
 		        System.out.println("message id: " + aisMessage.getMsgId());
+
 		    }
 		});
-		
+
 		reader.start();
 		reader.join();
 	}
@@ -77,6 +81,15 @@ public class ReadMessage {
 		reader.start();
 		reader.join();
 	}
+	
+//	public AisPacket retrieveAisPacket(){
+//		AisReader reader = new AisStreamReader(new FileInputStream(logFile));
+//		
+//		reader.
+//		
+//		return null;
+//		
+//	}
 
 	public void readRawTCP() throws InterruptedException{
 		AisTcpReader reader = new AisTcpReader(URL, port);
@@ -106,8 +119,8 @@ public class ReadMessage {
 	        System.out.println("speed over ground: " + posMessage.getSog());
 	    }
 	    // Handle position messages 1,2,3 and 18 (class A and B)  
-	    if (aisMessage instanceof IGeneralPositionMessage) {
-	        IGeneralPositionMessage posMessage = (IGeneralPositionMessage)aisMessage;
+	    if (aisMessage instanceof IVesselPositionMessage) {
+	    	IVesselPositionMessage posMessage = (IVesselPositionMessage)aisMessage;
 	        System.out.println("course over ground: " + posMessage.getCog());
 	    }
 	    // Handle static reports for both class A and B vessels (msg 5 + 24)
@@ -115,5 +128,41 @@ public class ReadMessage {
 	        AisStaticCommon staticMessage = (AisStaticCommon)aisMessage;
 	        System.out.println("vessel name: " + staticMessage.getName());
 	    }                   
+	}
+	
+	public void multipleSources(){
+		// Make a handler
+		Consumer<AisMessage> handler = new Consumer<AisMessage>() {          
+		    @Override
+		    public void accept(AisMessage aisMessage) {
+		        System.out.println("aisMessage: " + aisMessage);                
+		    }
+		};
+
+		// Make readers and register handler
+		AisReader reader1 = new AisTcpReader("host1", 4001);
+		AisReader reader2 = new AisTcpReader("host2", 4001);
+		AisReader reader3 = new AisTcpReader("host3", 4001);
+		reader1.registerHandler(handler);
+		reader2.registerHandler(handler);
+		reader3.registerHandler(handler);
+
+		// Start readers
+		reader1.start(); reader2.start(); reader3.start();
+	}
+	
+	public void roundRobinReading() throws InterruptedException{
+		RoundRobinAisTcpReader reader = new RoundRobinAisTcpReader();
+		reader.addHostPort("host1:4001");
+		reader.addHostPort("host2:4001");
+		reader.addHostPort("host3:4001");
+		reader.registerHandler(new Consumer<AisMessage>() {         
+		    @Override
+		    public void accept(AisMessage aisMessage) {
+		        System.out.println("message id: " + aisMessage.getMsgId());     
+		    }
+		});
+		reader.start();
+		reader.join();   
 	}
 }
