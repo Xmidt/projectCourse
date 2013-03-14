@@ -1,4 +1,4 @@
-package com.mycompany.pinass;
+package dk.dma.esim;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

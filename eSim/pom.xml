@@ -27,5 +27,11 @@
       <version>0.1-SNAPSHOT</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>dk.dma.ais</groupId>
+      <artifactId>ais-messages</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
 </project>
