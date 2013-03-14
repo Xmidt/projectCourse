@@ -21,8 +21,6 @@ public abstract class VirtualWorld implements IVirtualWorld {
         this.fullShipList = list;
     }
     
-    
-    
     public void updateVisible(){
         
     }
