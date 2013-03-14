@@ -20,8 +20,8 @@ public abstract class VirtualShip implements IVirtualShip {
     public VirtualShip(){
         this.position = Position.create(0.0, 0.0);
         this.length = 0;
-        this.length = 0;
-        this.type = ShipType.MILITARY;
+        this.width = 0;
+        this.type = ShipType.UNDEFINED;
         this.mass = 0;
         this.speed = 0;
         this.cog = 0;
@@ -69,9 +69,11 @@ public abstract class VirtualShip implements IVirtualShip {
     public int getLength(){
         return this.length;
     }
+    
     public int getWidth(){
         return this.width;
     }
+    
     public ShipType getType(){
         return this.type;
     }
