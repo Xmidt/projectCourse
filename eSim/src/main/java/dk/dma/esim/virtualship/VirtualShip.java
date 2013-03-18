@@ -82,7 +82,6 @@ public abstract class VirtualShip implements IVirtualShip {
         return this.mass;
     }
     
-    
     //public double getTrueSpeed();
     //public int getTrueCog();
 }

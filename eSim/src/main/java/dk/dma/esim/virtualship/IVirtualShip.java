@@ -8,7 +8,7 @@ import dk.dma.enav.model.geometry.Position;
 import dk.dma.enav.model.ship.ShipType;
 
 public interface IVirtualShip {
-    
+	
     public void setPos(Position pos);
     public void setSpeed(int speed);
     public void setCog(int cog);
@@ -24,6 +24,8 @@ public interface IVirtualShip {
     public int getWidth();
     public ShipType getType();
     public int getMass();
+
+    //public void loadAtributes(String path);
     
     //public double getTrueSpeed();
     //public int getTrueCog();
