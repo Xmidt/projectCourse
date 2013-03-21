@@ -16,7 +16,7 @@ public abstract class ShipControls implements IShipControls{
     public void setHeading(int heading){
     	ship.setCog(heading);
     }
-
+    	
     public int getCurrentSpeed(){
     	return ship.getSpeed();
     }
