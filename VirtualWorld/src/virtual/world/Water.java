@@ -1,6 +1,7 @@
 package virtual.world;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.asset.TextureKey;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
@@ -125,7 +126,7 @@ public class Water extends SimpleApplication {
         Material wood = new Material(
                 assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
             wood.setTexture("ColorMap",
-                assetManager.loadTexture("Models/Boat/boat.png"));
+                assetManager.loadTexture(new TextureKey("Models/Boat/boat.png",false)));
             boat.setMaterial(wood);
 
         boat.scale(1.5f, 1.5f, 1.5f);
