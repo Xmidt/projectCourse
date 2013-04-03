@@ -1,14 +1,55 @@
-package virtual.world;
+/*
+ * Copyright (c) 2009-2012 jMonkeyEngine
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ *
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
+ *   without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+package virtualworld;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.PhysicsSpace;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
+import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.bullet.control.VehicleControl;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
-import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
+import com.jme3.math.Plane;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
@@ -22,107 +63,209 @@ import com.jme3.system.AppSettings;
 import com.jme3.util.SkyFactory;
 import com.jme3.water.WaterFilter;
 
-/**
- * test
- *
- * @author normenhansen
- */
-public class Water extends SimpleApplication {
 
-    private Vector3f lightDir = new Vector3f(-4.9236743f,
--1.27054665f, 5.896916f);
-    private WaterFilter water;
-    private Node ship;
+public class Water extends SimpleApplication implements ActionListener {
+
+
+    private BulletAppState bulletAppState;
+    private VehicleControl vehicle;
+    private final float accelerationForce = 1000.0f;
+    private final float brakeForce = 100.0f;
+    private float steeringValue = 0;
+    private float accelerationValue = 0;
+    private Vector3f jumpForce = new Vector3f(0, 3000, 0);
     private CameraNode camNode;
-    private boolean useWater;
-    private boolean fixedCamera;
-    Geometry FloorBlock;
+    private Node vehicleNode;
+    private Node westNode;
+    private Box box;
+    private static final float shipLength = 2.48f;
+    private static final float shipWidth  = 2.24f;
+    private static final float shipHeight = 2.12f;
+    //private ShipPhysicsControl ctl;
+    private RigidBodyControl ctl;
+    private int forwardSpeed = 0;
+    private float acceleration = 1;
+    private boolean fixedCamera = true;
+    private Vector3f lightDir = new Vector3f(-4.9236743f, -1.27054665f, 5.896916f);
+    private WaterFilter water;
+    private Geometry floorGeometry;
+    private FilterPostProcessor fpp;
+    private float rudderAngel = 0.0f;
 
     public static void main(String[] args) {
-    /*
-    * Graphical settings
-    */
-    AppSettings settings = new AppSettings(true);
-    settings.setResolution(640,480);
-    settings.setFrameRate(30);
-    settings.setSamples(0);
-
+        //TestPhysicsCar app = new TestPhysicsCar();
         Water app = new Water();
-        app.setSettings(settings);
-        app.setShowSettings(false);     // Disable the settings menu at start
+        AppSettings aps = new AppSettings(true);
+        aps.setFrameRate(60);
+        aps.setResolution(1024, 768);
+        app.setSettings(aps);
+        app.showSettings = false;
         app.start();
     }
 
+
     @Override
     public void simpleInitApp() {
-
-    /*
-     * Variables for toggling camera and water
-     */
-
-    useWater = true;
-    fixedCamera = false;
-
-    /*
-    * Camera settings
-    */
-    flyCam.setMoveSpeed(50);
-    cam.setFrustumFar(4000);
-    cam.setLocation(new Vector3f(0f, 21f, 22f));
-    
-    
-    
-    cam.setRotation(new Quaternion(0.003f, 0.94f, -0.35f, 0f));
-
+        bulletAppState = new BulletAppState();
+        bulletAppState.setThreadingType(BulletAppState.ThreadingType.PARALLEL);
+        stateManager.attach(bulletAppState);
+        bulletAppState.getPhysicsSpace().setGravity(new Vector3f(0, -1, 0));
+        
         /*
+         * Creates node for water and skybox
+         */
+        Node mainScene = new Node("Main Scene");
+        rootNode.attachChild(mainScene);
+        
+         /*
+         * Skybox settings
+         */
+        Spatial sky = SkyFactory.createSky(assetManager, "Scenes/Beach/FullskiesSunset0068.dds", false);
+        sky.setLocalScale(350);
+        mainScene.attachChild(sky);
+        
+        DirectionalLight sun = new DirectionalLight();
+        sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f).normalizeLocal());
+        rootNode.addLight(sun);
+        
+        AmbientLight al = new AmbientLight();
+        al.setColor(ColorRGBA.White.mult(1000.3f));
+        rootNode.addLight(al);
+        
+        vehicleNode = new Node("vehicleNode");
+        
+        camNode = new CameraNode("Camera Node", cam);
+        /*
+         * Camera Settings
+         /
+        //toggle to fixed camera
+        flyCam.setEnabled(false);
+        flyCam.setMoveSpeed(50);
+        
+        //create the camera Node
+        //This mode means that camera copies the movements of the target:
+        camNode.setControlDir(ControlDirection.SpatialToCamera);
+        //Attach the camNode to the target:
+        vehicleNode.attachChild(camNode);
+        //Move camNode, e.g. behind and above the target:
+        camNode.setLocalTranslation(new Vector3f(0, 5, -10));
+        */
+         /*
          * Turn off status window
          */
         setDisplayFps(false);
         setDisplayStatView(false);
 
         /*
-         * Creates node for water and skybox
-         */
-        Node mainScene = new Node("Main Scene");
-        rootNode.attachChild(mainScene);
-
-        /*
-         * Creates private node to handle ship local envoriment
-         */
-        ship = new Node("Virtual ship");
-        rootNode.attachChild(ship);
-
-        /*
-         * Load custom keybindings
-         */
-        initKeys();
-
-        /*
-         * Skybox settings
-         */
-        Spatial sky = SkyFactory.createSky(assetManager,
-"Scenes/Beach/FullskiesSunset0068.dds", false);
-        sky.setLocalScale(350);
-        mainScene.attachChild(sky);
-
-        /*
-         * Draws the water
+         * Water
          */
         water = new WaterFilter(rootNode, lightDir);
-        FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
-        fpp.addFilter(water);
-        viewPort.addProcessor(fpp);
+        fpp = new FilterPostProcessor(assetManager);
         
-        //define the waterreplacement box        
-		FloorBlock = new Geometry("Floor", new Box(Vector3f.ZERO, 1000, 10, 1000));
-        Material shipBlockColor = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        shipBlockColor.setColor("Color", ColorRGBA.Blue);
-        FloorBlock.setMaterial(shipBlockColor);
-        FloorBlock.move(0f, -9.3f, 0f);
-        
-        // Load a model from test_data (OgreXML + material + texture)
-        Spatial boat = assetManager.loadModel("Models/Boat/boat.mesh.xml");
+        setupKeys();
+        buildWorld();
+        toggleWater();
+        toggleCamera();
+    }
 
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
+    }
+
+
+    private void setupKeys() {
+        inputManager.addMapping("Lefts", new KeyTrigger(KeyInput.KEY_H));
+        inputManager.addMapping("Rights", new KeyTrigger(KeyInput.KEY_K));
+        inputManager.addMapping("Ups", new KeyTrigger(KeyInput.KEY_U));
+        inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_J));
+        inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping("Reset", new KeyTrigger(KeyInput.KEY_RETURN));
+        inputManager.addMapping("ToggleCamera",  new KeyTrigger(KeyInput.KEY_X));
+        inputManager.addMapping("ToggleWater",  new KeyTrigger(KeyInput.KEY_V));
+        inputManager.addListener(this, "Lefts");
+        inputManager.addListener(this, "Rights");
+        inputManager.addListener(this, "Ups");
+        inputManager.addListener(this, "Downs");
+        inputManager.addListener(this, "Space");
+        inputManager.addListener(this, "Reset");
+        inputManager.addListener(this, "ToggleCamera");
+        inputManager.addListener(this, "ToggleWater");
+    }
+
+
+    private void buildWorld() {
+        Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.getAdditionalRenderState().setWireframe(true);
+        mat.setColor("Color", ColorRGBA.Red);
+
+        Material material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        material.setTexture("ColorMap", assetManager.loadTexture(new TextureKey("Blender/2.4x/textures/Grass_256.png",false)));
+        material.setColor("Color", ColorRGBA.Blue);
+          
+        Box floorBox = new Box(140000, 0.25f, 1400000);
+        Plane plane = new Plane();
+        plane.setOriginNormal(new Vector3f(0, -0.25f, 0), Vector3f.UNIT_Y);
+        
+        floorGeometry = new Geometry("Floor", floorBox);
+        floorGeometry.setMaterial(material);
+        floorGeometry.setLocalTranslation(0, -0.25f, 0);
+        floorGeometry.addControl(new RigidBodyControl(new PlaneCollisionShape(plane), 0));
+        
+        rootNode.attachChild(floorGeometry);
+        bulletAppState.getPhysicsSpace().add(floorGeometry);
+        
+    }
+
+    public void buildBuoys(){
+       
+        Spatial Buoy1 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
+        
+        Material wood = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        wood.setTexture("ColorMap", assetManager.loadTexture(new TextureKey("Models/MonkeyHead/MonkeyHead_diffuse.jpg",false)));
+        Buoy1.setMaterial(wood);
+        //Buoy1.addControl(new RigidBodyControl(new BoxCollisionShape(),0));
+        Buoy1.scale(3.5f, 3.5f, 3.5f);
+        //rootNode.attachChild(Buoy1);
+        //bulletAppState.getPhysicsSpace().add(Buoy1);
+        Buoy1.setLocalTranslation(100.0f, 4.5f, 100.0f);
+        
+        Spatial Buoy2 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
+        Buoy2.setMaterial(wood);
+        Buoy2.scale(3.5f, 3.5f, 3.5f);
+        Buoy2.setLocalTranslation(-100.0f, 4.5f, 100.0f);
+        
+        rootNode.attachChild(Buoy2);
+        
+        Spatial Buoy3 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
+        Buoy3.setMaterial(wood);
+        Buoy3.scale(3.5f, 3.5f, 3.5f);
+        Buoy3.setLocalTranslation(100.0f, 4.5f, -100.0f);
+        
+        rootNode.attachChild(Buoy3);
+        
+        Spatial Buoy4 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
+        Buoy4.setMaterial(wood);
+        Buoy4.scale(3.5f, 3.5f, 3.5f);
+        Buoy4.setLocalTranslation(-100.0f, 4.5f, -100.0f);
+        
+        rootNode.attachChild(Buoy4);
+        
+        Spatial Buoy5 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
+        Buoy5.setMaterial(wood);
+        Buoy5.scale(3.5f, 3.5f, 3.5f);
+        Buoy5.setLocalTranslation(0f, 4.5f, 100.0f);
+        Buoy5.rotate(0, 3, 0);
+        
+        rootNode.attachChild(Buoy5);
+        
+    }
+    
+    public void buildBoat(){
+         
+        Spatial boat = assetManager.loadModel("Models/Boat/boat.mesh.xml");
+        westNode = new Node();
+        
         Material wood = new Material(
                 assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
             wood.setTexture("ColorMap",
@@ -131,142 +274,222 @@ public class Water extends SimpleApplication {
 
         boat.scale(1.5f, 1.5f, 1.5f);
         boat.setLocalTranslation(0.0f, 1.5f, 0.0f);
-        ship.attachChild(boat);
 
+        vehicleNode.attachChild(boat);
+        rootNode.attachChild(westNode);
+        westNode.move(100, 0, 0);
+        rootNode.attachChild(vehicleNode);
 
-        // Disable the default flyby cam
-//        flyCam.setEnabled(false);
-//        //create the camera Node
-//        camNode = new CameraNode("Camera Node", cam);
-//        //This mode means that camera copies the movements of the target:
-//        camNode.setControlDir(ControlDirection.SpatialToCamera);
-//        //Attach the camNode to the target:
-//        ship.attachChild(camNode);
-//        //Move camNode, e.g. behind and above the target:
-//        camNode.setLocalTranslation(new Vector3f(0, 5, -10));
-        //Rotate the camNode to look at the target:
-//      camNode.lookAt(ship.getLocalTranslation(), Vector3f.UNIT_Y);
-
-
-
+        ctl = new RigidBodyControl(25f);
+        
+        vehicleNode.addControl(ctl);
+        bulletAppState.getPhysicsSpace().add(ctl);
+        
+        //Maintain speed
+        ctl.setFriction(0f);
+   
     }
+    
+    private void toggleWater(){
+        
+        if(water.isEnabled()){
+            water.setEnabled(false);
+            viewPort.removeProcessor(fpp);
+            rootNode.attachChild(floorGeometry);
+        } else {
+            water.setEnabled(true);
+            rootNode.detachChild(floorGeometry);
+            fpp.addFilter(water);
+            viewPort.addProcessor(fpp);    
+        }
+    }
+    
+    private void toggleCamera(){
+        if (fixedCamera) {
+            //toggle to free camera
+            camNode.setEnabled(false);
+            inputManager.setCursorVisible(false);
+            System.out.println("freecam");
+            flyCam.setEnabled(true);
+            flyCam.setMoveSpeed(100);
+            cam.setFrustumFar(4000);
 
-    /*
-     * Automatic updater
-     */
+            Vector3f shipTranslation = vehicleNode.getLocalTranslation();
+            Vector3f constantTranslation = new Vector3f(0f, 20f, 0f);
+            Vector3f orientationTranslation = vehicleNode.getLocalRotation().getRotationColumn(2).mult(-50);
+            Vector3f totalTranslation = shipTranslation.add(constantTranslation).add(orientationTranslation);
+
+            cam.setLocation(totalTranslation);
+            cam.lookAt(vehicleNode.getLocalTranslation(), Vector3f.UNIT_Y);
+        } else {
+            //toggle to fixed camera
+            System.out.println("fixedcam");
+            flyCam.setEnabled(false);
+            //create the camera Node
+            camNode = new CameraNode("Camera Node", cam);
+            //This mode means that camera copies the movements of the target:
+            camNode.setControlDir(ControlDirection.SpatialToCamera);
+            //Attach the camNode to the target:
+            vehicleNode.attachChild(camNode);
+            //Move camNode, e.g. behind and above the target:
+            camNode.setLocalTranslation(new Vector3f(0, 5, -15));
+        }
+        fixedCamera = !fixedCamera;
+    }
+    
+    int i = 50;
+    
+   
+//    public void update(float tpf) {
+//
+//            Vector3f dir = new Vector3f();
+//
+//            // Direction we want to go to (lookAt-like)
+//            dir = destination.subtract(playerShip.getWorldTranslation()).normalize();
+//
+//            Vector3f radians = getCurrentAngleInRadians(dir);
+//            float speedToGo = getSpeedFromAngle(radians);
+//            float distanceToTarget = getDistanceToDestination();
+//
+//            if (amount <= 1) {
+//// Copy of our actual rotation Quaternion
+//                Quaternion rotator = playerShip.getWorldRotation();
+//// Up vector has to be proper up vector for ship
+//                if (speedToGo >= .50f || distanceToTarget < 5f) {
+//// level ship by rolling
+//                    rotator.lookAt(dir, Vector3f.UNIT_Y);
+//                } else {
+//// sets Up to look at for this frame
+//                    Vector3f playerUp = playerShip.getLocalRotation().mult(Vector3f.UNIT_Y);
+//                    rotator.lookAt(dir, playerUp);
+//                }
+//// Rotate ship only by amount into direction
+//                playerShip.getLocalRotation().slerp(rotator, amount * tpf);
+//// Rotate by its own value?
+//                playerShip.setLocalRotation(playerShip.getLocalRotation());
+//            }
+//
+//            gMgrs.getGameState().getPlayer().getShip().incToXSpeed(speedToGo);
+//
+//// FIXME: find algorithm to decelerate ship as distance shortens
+//// according to speed.
+//            if (distanceToTarget >= 0 && distanceToTarget <= 0.3) {
+//                System.out.println("We’re there!");
+//// stop ship
+//                gMgrs.getGameState().getPlayer().getShip().decToStopSpeed();
+//                readyToGo = false;
+//                areWeThereYet = true;
+//            }
+//        
+//    }
+    
     @Override
     public void simpleUpdate(float tpf) {
-
-    }
-
-    /*
-     * Custom Keybinding:
-     * Map named actions to inputs.
-     */
-    private void initKeys() {
-    /*
-    * Labels the keybindings
-    */
-        inputManager.addMapping("Up",  new KeyTrigger(KeyInput.KEY_I));
-        inputManager.addMapping("Down",  new KeyTrigger(KeyInput.KEY_K));
-        inputManager.addMapping("Left",   new KeyTrigger(KeyInput.KEY_J));
-        inputManager.addMapping("Right",  new KeyTrigger(KeyInput.KEY_L));
-        inputManager.addMapping("ToggleCamera",  new KeyTrigger(KeyInput.KEY_X));
-        inputManager.addMapping("ToggleWater",  new KeyTrigger(KeyInput.KEY_V));
+       // cam.lookAt(vehicle.getPhysicsLocation(), Vector3f.UNIT_Y);
+               //System.out.println("SimpleUpdate");
+        //ctl.applyCentralForce(jumpForce);
+        //ctl.setPhysicsLocation(new Vector3f(0.0f,ctl.getPhysicsLocation().y+=0.02f,0.0f));
+        //System.out.println(ctl.getPhysicsLocation().toString());
+        
+        //update();
+        
+        
+        if(ctl != null){
         
 
-        /*
-         * Group the keybindings together in a string array
-         */
-        inputManager.addListener(analogListener, new String[]{"Up",
-"Down", "Left", "Right",});
-        inputManager.addListener(actionListener, new String[]{"ToggleCamera", "ToggleWater"});
-
+        ctl.setLinearVelocity(ctl.getLinearVelocity().multLocal(new Vector3f(1,0,1)));
+        
+            if(i==0){    //only print info on every i'th update tick
+                calculateNewHeading();
+                System.out.println("Speed:" + forwardSpeed);
+                System.out.println(ctl.getLinearVelocity().toString());
+                System.out.println("Direction:");
+                System.out.println(vehicleNode.getLocalRotation().getRotationColumn(2).toString());
+                System.out.println("Angular Vel:");
+                System.out.println(ctl.getAngularVelocity().toString());
+                
+                i = 50;
+            } else{
+                i--;
+            }
+        }
     }
 
-    /*
-     * Controls the node "ship", according to user input.
-     *
-     * TODO
-     * When rotating, the ship only moves along 1 axes.
-     */
-    
-    private ActionListener actionListener = new ActionListener() {
-        public void onAction(String name, boolean keyPressed, float tpf) {
-          if (name.equals("ToggleCamera") && !keyPressed) {
-        	if (fixedCamera){
-        		//toggle to free camera
-        		camNode.setEnabled(false);
-        		inputManager.setCursorVisible(false);
-        		System.out.println("freecam");
-        		flyCam.setEnabled(true);
-        	    flyCam.setMoveSpeed(50);
-        	    cam.setFrustumFar(4000);
+    @Override
+    public void onAction(String binding, boolean value, float tpf) {
+        
+        Vector3f playerUp = vehicleNode.getLocalRotation().mult(Vector3f.UNIT_Y);
+        
+        if(value){
+        if (binding.equals("Lefts")) {
 
-        	    Vector3f shipTranslation        = ship.getLocalTranslation();
-        	    Vector3f constantTranslation    = new Vector3f(0f, 20f, 0f);
-        	    Vector3f orientationTranslation = ship.getLocalRotation().getRotationColumn(2).mult(-50);
-        	    Vector3f totalTranslation       = shipTranslation.add(constantTranslation).add(orientationTranslation);
+            rudderAngel-=0.1f;
+            System.out.println("New rudder angel: " + rudderAngel);
+            
+        } else if (binding.equals("Rights")) {
+            
+            rudderAngel+=0.1f;
+            System.out.println("New rudder angel: " + rudderAngel);
+            
+        } else if (binding.equals("Ups")) {    
+            
+            forwardSpeed++;
+            ctl.setLinearVelocity(vehicleNode.getLocalRotation().getRotationColumn(2).mult(forwardSpeed));
+            
+        } else if (binding.equals("Downs")) {
+            
+            forwardSpeed--;
+            ctl.setLinearVelocity(vehicleNode.getLocalRotation().getRotationColumn(2).mult(forwardSpeed));
+            
+        } else if (binding.equals("Space")) {
+            
+            if(ctl == null) buildBoat();
 
-        	    cam.setLocation(totalTranslation);
-        	    cam.lookAt(ship.getLocalTranslation(), Vector3f.UNIT_Y);
-        	}
-        	else{
-        		//toggle to fixed camera
-        		System.out.println("fixedcam");
-                flyCam.setEnabled(false);
-                //create the camera Node
-                camNode = new CameraNode("Camera Node", cam);
-                //This mode means that camera copies the movements of the target:
-                camNode.setControlDir(ControlDirection.SpatialToCamera);
-                //Attach the camNode to the target:
-                ship.attachChild(camNode);
-                //Move camNode, e.g. behind and above the target:
-                camNode.setLocalTranslation(new Vector3f(0, 5, -10));    
-        	}
-        	fixedCamera = !fixedCamera;
+        } else if (binding.equals("Reset")) {
+                buildBuoys();
+              
+        } else if (binding.equals("ToggleWater")){
+                toggleWater();
+                System.out.println("Water");
+                
+        } else if (binding.equals("ToggleCamera")){
+                toggleCamera();
         }
-        if (name.equals("ToggleWater") && !keyPressed){
-        	if (useWater){
-                water.setEnabled(false);
-                rootNode.attachChild(FloorBlock);
-        	}
-            else {
-                water.setEnabled(true);            	
-                rootNode.detachChild(FloorBlock);
-            }
-        	useWater = !useWater;
-          }
         }
-      };
+    }
+    
+    private void calculateNewHeading() {
 
-    
-    private AnalogListener analogListener = new AnalogListener() {
-      public void onAnalog(String name, float value, float tpf) {
-        if (name.equals("Up")) {
-        Vector3f v = ship.getLocalTranslation();
-        Vector3f o = ship.getLocalRotation().getRotationColumn(2);
-        ship.setLocalTranslation(v.add(o));
-        }
-        if (name.equals("Down")) {
-        Vector3f v = ship.getLocalTranslation();
-        Vector3f o = ship.getLocalRotation().getRotationColumn(2);
-        ship.setLocalTranslation(v.subtract(o));
-        }
-        if (name.equals("Right")) {
-        ship.rotate(0, -value*speed, 0);
-        }
-        if (name.equals("Left")) {
-        	ship.rotate(0, value*speed, 0);
-        }
-      }
-    };
-    
-    
-    
-    
-//    
-//    
-//    
-//    };
+        Vector3f playerUp = vehicleNode.getLocalRotation().mult(Vector3f.UNIT_Y);
+        
+        System.out.println("Local rotation: " + vehicleNode.getLocalRotation());
+        
+        westNode.setLocalTranslation(rootNode.getLocalTranslation().x+100, rootNode.getLocalTranslation().y, rootNode.getLocalTranslation().z);
+        
+        vehicleNode.removeControl(ctl);
+           
+            //Vector3f destination = new Vector3f(-100.0f, 0.0f, 100.0f);
+        //Vector3f destination = vehicleNode.getWorldTranslation().mult(Vector3f.UNIT_XYZ);
+        Vector3f destination = westNode.getWorldTranslation().mult(Vector3f.UNIT_XYZ);
+            
+            //Quaternion destination = new Quaternion(-100.0f, 4.5f, 100.0f, 1.0f);
+            
+            //low shipfactor for slow ships
+            //if (amount != 1){
+        Vector3f dir = destination.subtract(vehicleNode.getWorldTranslation()).normalize();
+            //System.out.println("Dir: " + dir);
+        Quaternion rotator = vehicleNode.getWorldRotation(); //up vector has to be proper up vector for given object
+                
+            rotator.lookAt(dir, playerUp); //rotate ship only by amount into direction
+                //System.out.println(rotator);
+            vehicleNode.getLocalRotation().slerp(rotator, rudderAngel);
+            vehicleNode.setLocalRotation(vehicleNode.getLocalRotation());
+            System.out.println("Local rotation: " + vehicleNode.getLocalRotation());
+  
+            //}
+        
+            vehicleNode.addControl(ctl);
+            ctl.setLinearVelocity(vehicleNode.getLocalRotation().getRotationColumn(2).mult(forwardSpeed));
+           
+    }
 }
