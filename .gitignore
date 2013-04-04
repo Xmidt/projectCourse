@@ -1,7 +1,8 @@
 *.class
 
 # Directories #
-/bin
+*/bin
+bin
 target
 .settings
 

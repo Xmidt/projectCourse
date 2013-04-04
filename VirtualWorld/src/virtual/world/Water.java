@@ -31,16 +31,13 @@
  */
 
 
-package virtualworld;
+package virtual.world;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.bullet.control.VehicleControl;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
@@ -48,10 +45,9 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
 import com.jme3.math.Plane;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
@@ -63,37 +59,29 @@ import com.jme3.system.AppSettings;
 import com.jme3.util.SkyFactory;
 import com.jme3.water.WaterFilter;
 
+import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.screen.Screen;
+import de.lessvoid.nifty.screen.ScreenController;
 
-public class Water extends SimpleApplication implements ActionListener {
+
+public class Water extends SimpleApplication implements ActionListener,ScreenController  {
 
 
     private BulletAppState bulletAppState;
-    private VehicleControl vehicle;
-    private final float accelerationForce = 1000.0f;
-    private final float brakeForce = 100.0f;
-    private float steeringValue = 0;
-    private float accelerationValue = 0;
-    private Vector3f jumpForce = new Vector3f(0, 3000, 0);
     private CameraNode camNode;
     private Node vehicleNode;
     private Node westNode;
-    private Box box;
-    private static final float shipLength = 2.48f;
-    private static final float shipWidth  = 2.24f;
-    private static final float shipHeight = 2.12f;
-    //private ShipPhysicsControl ctl;
     private RigidBodyControl ctl;
     private int forwardSpeed = 0;
-    private float acceleration = 1;
     private boolean fixedCamera = true;
     private Vector3f lightDir = new Vector3f(-4.9236743f, -1.27054665f, 5.896916f);
     private WaterFilter water;
     private Geometry floorGeometry;
     private FilterPostProcessor fpp;
     private float rudderAngel = 0.0f;
+	private Nifty nifty;
 
     public static void main(String[] args) {
-        //TestPhysicsCar app = new TestPhysicsCar();
         Water app = new Water();
         AppSettings aps = new AppSettings(true);
         aps.setFrameRate(60);
@@ -135,21 +123,7 @@ public class Water extends SimpleApplication implements ActionListener {
         vehicleNode = new Node("vehicleNode");
         
         camNode = new CameraNode("Camera Node", cam);
-        /*
-         * Camera Settings
-         /
-        //toggle to fixed camera
-        flyCam.setEnabled(false);
-        flyCam.setMoveSpeed(50);
         
-        //create the camera Node
-        //This mode means that camera copies the movements of the target:
-        camNode.setControlDir(ControlDirection.SpatialToCamera);
-        //Attach the camNode to the target:
-        vehicleNode.attachChild(camNode);
-        //Move camNode, e.g. behind and above the target:
-        camNode.setLocalTranslation(new Vector3f(0, 5, -10));
-        */
          /*
          * Turn off status window
          */
@@ -162,18 +136,29 @@ public class Water extends SimpleApplication implements ActionListener {
         water = new WaterFilter(rootNode, lightDir);
         fpp = new FilterPostProcessor(assetManager);
         
+        /*
+         * Creating the compass Gui
+         */
+        NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager,
+                inputManager,
+                audioRenderer,
+                guiViewPort);
+        
+        nifty = niftyDisplay.getNifty();
+        nifty.fromXml("Interface/Nifty/compass.xml", "start",this);
+
+        // attach the nifty display to the gui view port as a processor
+        guiViewPort.addProcessor(niftyDisplay);
+        
         setupKeys();
         buildWorld();
         toggleWater();
         toggleCamera();
     }
 
-
-    private PhysicsSpace getPhysicsSpace(){
-        return bulletAppState.getPhysicsSpace();
-    }
-
-
+    /*
+     * Key listener
+     */
     private void setupKeys() {
         inputManager.addMapping("Lefts", new KeyTrigger(KeyInput.KEY_H));
         inputManager.addMapping("Rights", new KeyTrigger(KeyInput.KEY_K));
@@ -193,7 +178,9 @@ public class Water extends SimpleApplication implements ActionListener {
         inputManager.addListener(this, "ToggleWater");
     }
 
-
+    /*
+     * Method which builds the virtual world
+     */
     private void buildWorld() {
         Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
         mat.getAdditionalRenderState().setWireframe(true);
@@ -217,6 +204,11 @@ public class Water extends SimpleApplication implements ActionListener {
         
     }
 
+    /*
+     * Draws some monkey heads, which currently represents  bouys:
+     * 
+     * 	Hotkey: Enter/Return
+     */
     public void buildBuoys(){
        
         Spatial Buoy1 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
@@ -224,10 +216,7 @@ public class Water extends SimpleApplication implements ActionListener {
         Material wood = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         wood.setTexture("ColorMap", assetManager.loadTexture(new TextureKey("Models/MonkeyHead/MonkeyHead_diffuse.jpg",false)));
         Buoy1.setMaterial(wood);
-        //Buoy1.addControl(new RigidBodyControl(new BoxCollisionShape(),0));
         Buoy1.scale(3.5f, 3.5f, 3.5f);
-        //rootNode.attachChild(Buoy1);
-        //bulletAppState.getPhysicsSpace().add(Buoy1);
         Buoy1.setLocalTranslation(100.0f, 4.5f, 100.0f);
         
         Spatial Buoy2 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
@@ -261,6 +250,11 @@ public class Water extends SimpleApplication implements ActionListener {
         
     }
     
+    /*
+     * Draws the boat in the virtual world:
+     * 
+     * 	Hotkey: Space
+     */
     public void buildBoat(){
          
         Spatial boat = assetManager.loadModel("Models/Boat/boat.mesh.xml");
@@ -290,6 +284,11 @@ public class Water extends SimpleApplication implements ActionListener {
    
     }
     
+    /*
+     * Toogle water on and off for better framerate:
+     * 	
+     * 	Hotkey: v
+     */
     private void toggleWater(){
         
         if(water.isEnabled()){
@@ -304,6 +303,9 @@ public class Water extends SimpleApplication implements ActionListener {
         }
     }
     
+    /*
+     * Fixes the camera to the boat, or turn it into a freecam
+     */
     private void toggleCamera(){
         if (fixedCamera) {
             //toggle to free camera
@@ -337,159 +339,69 @@ public class Water extends SimpleApplication implements ActionListener {
         fixedCamera = !fixedCamera;
     }
     
-    int i = 50;
-    
-   
-//    public void update(float tpf) {
-//
-//            Vector3f dir = new Vector3f();
-//
-//            // Direction we want to go to (lookAt-like)
-//            dir = destination.subtract(playerShip.getWorldTranslation()).normalize();
-//
-//            Vector3f radians = getCurrentAngleInRadians(dir);
-//            float speedToGo = getSpeedFromAngle(radians);
-//            float distanceToTarget = getDistanceToDestination();
-//
-//            if (amount <= 1) {
-//// Copy of our actual rotation Quaternion
-//                Quaternion rotator = playerShip.getWorldRotation();
-//// Up vector has to be proper up vector for ship
-//                if (speedToGo >= .50f || distanceToTarget < 5f) {
-//// level ship by rolling
-//                    rotator.lookAt(dir, Vector3f.UNIT_Y);
-//                } else {
-//// sets Up to look at for this frame
-//                    Vector3f playerUp = playerShip.getLocalRotation().mult(Vector3f.UNIT_Y);
-//                    rotator.lookAt(dir, playerUp);
-//                }
-//// Rotate ship only by amount into direction
-//                playerShip.getLocalRotation().slerp(rotator, amount * tpf);
-//// Rotate by its own value?
-//                playerShip.setLocalRotation(playerShip.getLocalRotation());
-//            }
-//
-//            gMgrs.getGameState().getPlayer().getShip().incToXSpeed(speedToGo);
-//
-//// FIXME: find algorithm to decelerate ship as distance shortens
-//// according to speed.
-//            if (distanceToTarget >= 0 && distanceToTarget <= 0.3) {
-//                System.out.println("We’re there!");
-//// stop ship
-//                gMgrs.getGameState().getPlayer().getShip().decToStopSpeed();
-//                readyToGo = false;
-//                areWeThereYet = true;
-//            }
-//        
-//    }
-    
     @Override
     public void simpleUpdate(float tpf) {
-       // cam.lookAt(vehicle.getPhysicsLocation(), Vector3f.UNIT_Y);
-               //System.out.println("SimpleUpdate");
-        //ctl.applyCentralForce(jumpForce);
-        //ctl.setPhysicsLocation(new Vector3f(0.0f,ctl.getPhysicsLocation().y+=0.02f,0.0f));
-        //System.out.println(ctl.getPhysicsLocation().toString());
-        
-        //update();
-        
-        
-        if(ctl != null){
-        
 
-        ctl.setLinearVelocity(ctl.getLinearVelocity().multLocal(new Vector3f(1,0,1)));
-        
-            if(i==0){    //only print info on every i'th update tick
-                calculateNewHeading();
-                System.out.println("Speed:" + forwardSpeed);
-                System.out.println(ctl.getLinearVelocity().toString());
-                System.out.println("Direction:");
-                System.out.println(vehicleNode.getLocalRotation().getRotationColumn(2).toString());
-                System.out.println("Angular Vel:");
-                System.out.println(ctl.getAngularVelocity().toString());
-                
-                i = 50;
-            } else{
-                i--;
-            }
-        }
     }
 
     @Override
     public void onAction(String binding, boolean value, float tpf) {
-        
-        Vector3f playerUp = vehicleNode.getLocalRotation().mult(Vector3f.UNIT_Y);
-        
         if(value){
-        if (binding.equals("Lefts")) {
-
-            rudderAngel-=0.1f;
-            System.out.println("New rudder angel: " + rudderAngel);
-            
-        } else if (binding.equals("Rights")) {
-            
-            rudderAngel+=0.1f;
-            System.out.println("New rudder angel: " + rudderAngel);
-            
-        } else if (binding.equals("Ups")) {    
-            
-            forwardSpeed++;
-            ctl.setLinearVelocity(vehicleNode.getLocalRotation().getRotationColumn(2).mult(forwardSpeed));
-            
-        } else if (binding.equals("Downs")) {
-            
-            forwardSpeed--;
-            ctl.setLinearVelocity(vehicleNode.getLocalRotation().getRotationColumn(2).mult(forwardSpeed));
-            
-        } else if (binding.equals("Space")) {
-            
-            if(ctl == null) buildBoat();
-
-        } else if (binding.equals("Reset")) {
-                buildBuoys();
-              
-        } else if (binding.equals("ToggleWater")){
-                toggleWater();
-                System.out.println("Water");
-                
-        } else if (binding.equals("ToggleCamera")){
-                toggleCamera();
-        }
+	        if (binding.equals("Lefts")) {
+	
+	            rudderAngel-=0.1f;
+	            System.out.println("New rudder angel: " + rudderAngel);
+	            
+	        } else if (binding.equals("Rights")) {
+	            
+	            rudderAngel+=0.1f;
+	            System.out.println("New rudder angel: " + rudderAngel);
+	            
+	        } else if (binding.equals("Ups")) {    
+	            
+	            forwardSpeed++;
+	            ctl.setLinearVelocity(vehicleNode.getLocalRotation().getRotationColumn(2).mult(forwardSpeed));
+	            
+	        } else if (binding.equals("Downs")) {
+	            
+	            forwardSpeed--;
+	            ctl.setLinearVelocity(vehicleNode.getLocalRotation().getRotationColumn(2).mult(forwardSpeed));
+	            
+	        } else if (binding.equals("Space")) {
+	            
+	            if(ctl == null) buildBoat();
+	
+	        } else if (binding.equals("Reset")) {
+	                buildBuoys();
+	              
+	        } else if (binding.equals("ToggleWater")){
+	                toggleWater();
+	                System.out.println("Water");
+	                
+	        } else if (binding.equals("ToggleCamera")){
+	                toggleCamera();
+	        }
         }
     }
-    
-    private void calculateNewHeading() {
 
-        Vector3f playerUp = vehicleNode.getLocalRotation().mult(Vector3f.UNIT_Y);
-        
-        System.out.println("Local rotation: " + vehicleNode.getLocalRotation());
-        
-        westNode.setLocalTranslation(rootNode.getLocalTranslation().x+100, rootNode.getLocalTranslation().y, rootNode.getLocalTranslation().z);
-        
-        vehicleNode.removeControl(ctl);
-           
-            //Vector3f destination = new Vector3f(-100.0f, 0.0f, 100.0f);
-        //Vector3f destination = vehicleNode.getWorldTranslation().mult(Vector3f.UNIT_XYZ);
-        Vector3f destination = westNode.getWorldTranslation().mult(Vector3f.UNIT_XYZ);
-            
-            //Quaternion destination = new Quaternion(-100.0f, 4.5f, 100.0f, 1.0f);
-            
-            //low shipfactor for slow ships
-            //if (amount != 1){
-        Vector3f dir = destination.subtract(vehicleNode.getWorldTranslation()).normalize();
-            //System.out.println("Dir: " + dir);
-        Quaternion rotator = vehicleNode.getWorldRotation(); //up vector has to be proper up vector for given object
-                
-            rotator.lookAt(dir, playerUp); //rotate ship only by amount into direction
-                //System.out.println(rotator);
-            vehicleNode.getLocalRotation().slerp(rotator, rudderAngel);
-            vehicleNode.setLocalRotation(vehicleNode.getLocalRotation());
-            System.out.println("Local rotation: " + vehicleNode.getLocalRotation());
-  
-            //}
-        
-            vehicleNode.addControl(ctl);
-            ctl.setLinearVelocity(vehicleNode.getLocalRotation().getRotationColumn(2).mult(forwardSpeed));
-           
-    }
+	@Override
+	public void bind(Nifty arg0, Screen arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void onEndScreen() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void onStartScreen() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
