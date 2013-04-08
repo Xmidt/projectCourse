@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
-    <!-- +++++++++++++++++++++++++++++++++++++++ -->
-    <!-- start screen -->
-    <!-- +++++++++++++++++++++++++++++++++++++++ -->
     <screen id="start" controller="virtual.world.Water">
         <layer id="backgound" childLayout="center">
             <panel id="compass" height="25%" width="20%" align="right" valign="top" childLayout="center" visibleToMouse="true">
@@ -10,10 +7,10 @@
                 <image filename="Textures/compassWithBackground.png" height="100%" width="100%"></image>
             </panel>
         </layer>
-        <layer id="forgound" childLayout="center">
-                        <panel id="compassNeedle" height="25%" width="20%" align="right" valign="top" childLayout="center" visibleToMouse="true">
-                <image filename="Textures/compassNeedle.png" height="35%"></image>
+        <!-- layer id="forgound" childLayout="center">
+            <panel id="compassNeedle" height="25%" width="20%" align="right" valign="top" childLayout="center" visibleToMouse="true">
+                <image filename="Textures/compassNeedle.png" height="35%" widt="35%"></image>
             </panel>
-        </layer>
+        </layer -->
     </screen>
 </nifty>

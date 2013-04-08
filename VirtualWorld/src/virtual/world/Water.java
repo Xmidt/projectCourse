@@ -56,6 +56,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.CameraControl.ControlDirection;
 import com.jme3.scene.shape.Box;
 import com.jme3.system.AppSettings;
+import com.jme3.ui.Picture;
 import com.jme3.util.SkyFactory;
 import com.jme3.water.WaterFilter;
 
@@ -79,8 +80,11 @@ public class Water extends SimpleApplication implements ActionListener,ScreenCon
     private Geometry floorGeometry;
     private FilterPostProcessor fpp;
     private float rudderAngel = 0.0f;
+    
 	private Nifty nifty;
-
+	
+	private Node compassNode;
+	
     public static void main(String[] args) {
         Water app = new Water();
         AppSettings aps = new AppSettings(true);
@@ -100,10 +104,12 @@ public class Water extends SimpleApplication implements ActionListener,ScreenCon
         bulletAppState.getPhysicsSpace().setGravity(new Vector3f(0, -1, 0));
         
         /*
-         * Creates node for water and skybox
+         * Creates node for compass needle, water and skybox
          */
         Node mainScene = new Node("Main Scene");
+        compassNode = new Node("Compass needle");
         rootNode.attachChild(mainScene);
+        guiNode.attachChild(compassNode);		// Attach the compassneedle node to the gui interface of JME
         
          /*
          * Skybox settings
@@ -146,9 +152,24 @@ public class Water extends SimpleApplication implements ActionListener,ScreenCon
         
         nifty = niftyDisplay.getNifty();
         nifty.fromXml("Interface/Nifty/compass.xml", "start",this);
-
+        
         // attach the nifty display to the gui view port as a processor
         guiViewPort.addProcessor(niftyDisplay);
+        
+        /*
+         * Creates a compass needle, in JME gui interface
+         */
+        Picture pic = new Picture("HUD Picture");
+        pic.setImage(assetManager, "Textures/compassNeedle.png", true);
+        pic.setWidth(settings.getWidth()/10);
+        pic.setHeight(settings.getHeight()/10);
+        pic.move(-settings.getWidth()/20, -settings.getHeight()/20, 0);
+        pic.rotateUpTo(new Vector3f(0,0,0));
+        
+        compassNode.attachChild(pic);
+        compassNode.move(settings.getWidth()-105, settings.getHeight()-100, 0);
+        
+        rotateCompassNeedle(3);
         
         setupKeys();
         buildWorld();
@@ -382,6 +403,10 @@ public class Water extends SimpleApplication implements ActionListener,ScreenCon
 	                toggleCamera();
 	        }
         }
+    }
+    
+    public void rotateCompassNeedle(float value) {
+    	compassNode.rotate(0, 0, value);
     }
 
 	@Override
