@@ -15,5 +15,3 @@ target
 *.war
 *.ear
 *.so
-
-!eSim/repo/**/*
