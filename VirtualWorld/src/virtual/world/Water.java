@@ -29,7 +29,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package virtualworld;
+package virtual.world;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
@@ -43,7 +43,9 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Matrix3f;
 import com.jme3.math.Plane;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
@@ -162,7 +164,7 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
         compassNode.attachChild(pic);
         compassNode.move(settings.getWidth() - 105, settings.getHeight() - 100, 0);
 
-        rotateCompassNeedle(3);
+//        rotateCompassNeedle(3);
 
         setupKeys();
         buildWorld();
@@ -357,6 +359,7 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
     public void simpleUpdate(float tpf) {
     
          if(rootNode.hasChild(vehicleNode)) updateShipPosition(vehicleNode);
+         rotateCompassNeedle(vehicleNode.getLocalRotation());
          
     }
 
@@ -426,8 +429,9 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
         System.out.println(dump);
     }
 
-    public void rotateCompassNeedle(float value) {
-        compassNode.rotate(0, 0, value);
+    public void rotateCompassNeedle(Quaternion quaternion) {
+    	Quaternion rotation = new Quaternion(0, 0, quaternion.getY(), quaternion.getW());
+    	compassNode.setLocalRotation(rotation);
     }
 
     @Override
