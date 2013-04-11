@@ -13,6 +13,16 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  
+  
+  <repositories>
+    <!-- In Project repository -->
+    <repository>
+        <id>in-project</id>
+        <name>In Project Repo</name>
+        <url>file:///home/mads/DIKU/ps/git/projectCourse/eSim/repo</url>
+    </repository>   
+  </repositories>
 
   <dependencies>
     <dependency>
@@ -32,6 +42,86 @@
       <artifactId>ais-messages</artifactId>
       <version>0.1-SNAPSHOT</version>
       <type>jar</type>
+    </dependency>
+    <dependency>
+        <groupId>jME3-core</groupId>
+        <artifactId>jME3-core</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-desktop</groupId>
+        <artifactId>jME3-desktop</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-effects</groupId>
+        <artifactId>jME3-effects</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-jbullet</groupId>
+        <artifactId>jME3-jbullet</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-jogg</groupId>
+        <artifactId>jME3-jogg</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-lwjgl</groupId>
+        <artifactId>jME3-lwjgl</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-lwjgl-natives</groupId>
+        <artifactId>jME3-lwjgl-natives</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-networking</groupId>
+        <artifactId>jME3-networking</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-niftygui</groupId>
+        <artifactId>jME3-niftygui</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-plugins</groupId>
+        <artifactId>jME3-plugins</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-terrain</groupId>
+        <artifactId>jME3-terrain</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jME3-testdata</groupId>
+        <artifactId>jME3-testdata</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>jMonkeyEngine3</groupId>
+        <artifactId>jMonkeyEngine3</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>nifty-default-controls</groupId>
+        <artifactId>nifty-default-controls</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>nifty</groupId>
+        <artifactId>nifty</artifactId>
+        <version>3.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>nifty-style-black</groupId>
+        <artifactId>nifty-style-black</artifactId>
+        <version>3.0.0</version>
     </dependency>
   </dependencies>
 </project>
