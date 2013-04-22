@@ -31,7 +31,11 @@
  */
 package virtual.world;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import ais.reader.ReadMessage;
+import ais.reader.Ship;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
@@ -65,17 +69,13 @@ import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 
-import dk.dma.ais.message.AisMessage;
-import dk.dma.ais.message.AisPositionMessage;
-import dk.dma.enav.model.geometry.Position;
-
-import java.util.ArrayList;
-
 public class Water extends SimpleApplication implements ActionListener, ScreenController {
-
+	
     private BulletAppState bulletAppState;
-    private CameraNode camNode;
-    private Node vehicleNode;
+    private CameraNode camNode;				// The freecam node
+    private Node vehicleNode;				// The node which contain the controllable ship
+    
+    private Spatial ship;					// Used to draw the ships from ais lib
 
     private RigidBodyControl ctl;
     private int forwardSpeed = 0;
@@ -85,10 +85,11 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
     private Geometry floorGeometry;
     private FilterPostProcessor fpp;
     private float rudderAngle = 0.0f;
-    private Nifty nifty;
-    private Node compassNode;
     
-    private ReadMessage readMessage;
+    private Nifty nifty;					// Nifty package which contain the background of the compass
+    private Node compassNode;				// The gui of the compass needle
+    
+    private ReadMessage readMessage;		// Class which handle ais messages
 
     public static void main(String[] args) {
         Water app = new Water();
@@ -183,6 +184,7 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
         buildWorld();
         toggleWater();
         toggleCamera();
+        initiateBoats();
     }
 
     /*
@@ -194,7 +196,6 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
         inputManager.addMapping("Ups", new KeyTrigger(KeyInput.KEY_U));
         inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addMapping("Reset", new KeyTrigger(KeyInput.KEY_RETURN));
         inputManager.addMapping("ToggleCamera", new KeyTrigger(KeyInput.KEY_X));
         inputManager.addMapping("ToggleWater", new KeyTrigger(KeyInput.KEY_V));
         inputManager.addMapping("InfoDump", new KeyTrigger(KeyInput.KEY_I));
@@ -204,7 +205,6 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
         inputManager.addListener(this, "Ups");
         inputManager.addListener(this, "Downs");
         inputManager.addListener(this, "Space");
-        inputManager.addListener(this, "Reset");
         inputManager.addListener(this, "ToggleCamera");
         inputManager.addListener(this, "ToggleWater");
         inputManager.addListener(this, "InfoDump");
@@ -236,76 +236,27 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
     }
 
     /*
-     * Draws some monkey heads, which currently represents  bouys:
-     * 
-     * 	Hotkey: Enter/Return
+     * Used to draw boats with information obtained from ais messages
      */
-    public void buildBuoys() {
+    public void buildBoats(float latitude, float longitude, int length, int width) {
     	
-        Quaternion quaternion = new Quaternion();
-        quaternion.fromAngleAxis(1f, new Vector3f(0,0,0));
-        System.out.println(quaternion);
-        
         Material wood = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         wood.setTexture("ColorMap",assetManager.loadTexture(new TextureKey("Models/Boat/boat.png", false)));
         
-        Spatial ship1 = assetManager.loadModel("Models/Boat/boat.mesh.xml");
-        ship1.setMaterial(wood);
-        ship1.scale(6.0f, 10f, 30.0f);
-        ship1.setLocalTranslation(554207.0f, 1.5f, 123759.0f);
-        rootNode.attachChild(ship1);
-
-        Spatial ship2 = assetManager.loadModel("Models/Boat/boat.mesh.xml");
-        ship2.setMaterial(wood);
-        ship2.scale(6.0f, 10f, 21f);
-        ship2.setLocalTranslation(554045.0f, 1.5f, 123536.0f);
-        rootNode.attachChild(ship2);
+        ship = assetManager.loadModel("Models/Boat/boat.mesh.xml");
+        ship.setMaterial(wood);    
+    	
+        ship.scale(width/2, 1.5f, length/2);
+        ship.setLocalTranslation(latitude, 1.5f, longitude);
+        rootNode.attachChild(ship);
+    }
+    
+    private void initiateBoats(){
+        Material wood = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        wood.setTexture("ColorMap",assetManager.loadTexture(new TextureKey("Models/Boat/boat.png", false)));
         
-        Spatial ship3 = assetManager.loadModel("Models/Boat/boat.mesh.xml");
-        ship3.setMaterial(wood);
-        ship3.scale(1.5f, 1.5f, 1.5f);
-        ship3.setLocalTranslation(554208.0f, 1.5f, 123551.0f);
-        rootNode.attachChild(ship3);
-
-        vehicleNode.setLocalTranslation(554150.f, 1.5f, 123611.0f);
-        
-//        Spatial Buoy1 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
-//
-//        Material wood = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-//        wood.setTexture("ColorMap", assetManager.loadTexture(new TextureKey("Models/MonkeyHead/MonkeyHead_diffuse.jpg", false)));
-//        Buoy1.setMaterial(wood);
-//        Buoy1.scale(3.5f, 3.5f, 3.5f);
-//        Buoy1.setLocalTranslation(100.0f, 4.5f, 100.0f);
-//
-//        Spatial Buoy2 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
-//        Buoy2.setMaterial(wood);
-//        Buoy2.scale(3.5f, 3.5f, 3.5f);
-//        Buoy2.setLocalTranslation(-100.0f, 4.5f, 100.0f);
-//
-//        rootNode.attachChild(Buoy2);
-//
-//        Spatial Buoy3 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
-//        Buoy3.setMaterial(wood);
-//        Buoy3.scale(3.5f, 3.5f, 3.5f);
-//        Buoy3.setLocalTranslation(100.0f, 4.5f, -100.0f);
-//
-//        rootNode.attachChild(Buoy3);
-//
-//        Spatial Buoy4 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
-//        Buoy4.setMaterial(wood);
-//        Buoy4.scale(3.5f, 3.5f, 3.5f);
-//        Buoy4.setLocalTranslation(-100.0f, 4.5f, -100.0f);
-//
-//        rootNode.attachChild(Buoy4);
-//
-//        Spatial Buoy5 = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
-//        Buoy5.setMaterial(wood);
-//        Buoy5.scale(3.5f, 3.5f, 3.5f);
-//        Buoy5.setLocalTranslation(0f, 4.5f, 100.0f);
-//        Buoy5.rotate(0, 3, 0);
-//
-//        rootNode.attachChild(Buoy5);
-
+        ship = assetManager.loadModel("Models/Boat/boat.mesh.xml");
+        ship.setMaterial(wood);    
     }
 
     /*
@@ -414,9 +365,6 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
                     buildBoat();
                 }
 
-            } else if (binding.equals("Reset")) {
-                buildBuoys();
-
             } else if (binding.equals("ToggleWater")) {
                 toggleWater();
                 System.out.println("Water");
@@ -462,23 +410,61 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
     	compassNode.setLocalRotation(rotation);
     }
     
-    private void aisMessageHandler(){
-    	ArrayList<AisMessage> aisMessageList = readMessage.getAisMessage();
-    	System.out.print("Printing Ais message list:" + "\n");
-    	for (AisMessage aisMessage : aisMessageList){
-          // Handle position messages 1,2 and 3 (class A) by using their shared parent
-          if (aisMessage instanceof AisPositionMessage) {
-              AisPositionMessage posMessage = (AisPositionMessage)aisMessage;
-              Position position = posMessage.getPos().getGeoLocation();
-              try {
-              	System.out.print("   " + position + "\n");
-              	System.out.print("   " + position.getLatitude() + "   " + position.getLongitude() + "\n");
-              } catch(NullPointerException e) {
-              	
-              }
-          }
-    	}
-    }
+    /*
+     * Used to test the ReadMessage class and draw ships
+     * 
+     * 	Hotkey: o
+     * 
+     * TODO:
+     * 	Name the nodes with the ship mmsi.
+     * 	Check if the mmsi node is already represented, if so update the current note.
+     * 
+     * 	When done testing, the ais handler should be added to simpleUpdate(), to keep all the ships locations up to date.
+     */
+	private void aisMessageHandler(){
+		/*
+		 * Latitude and longitude variables are used to define origin.
+		 * 
+		 * The length of 1 minute of latitude is 1.853 km
+		 */		
+		float latitude = 55.4149920f;
+		float longitude = 12.3649320f;
+		float diff = 0.2f;
+		
+		double shipLat = 0;
+		double shipLon = 0;
+		
+		int shipBow = 0;
+		int shipPor = 0;
+		int shipSta = 0;
+		int shipSte = 0;
+		
+		ArrayList<Integer> shipMMSI = readMessage.getShipMmsi();
+		HashMap<Integer,Ship> ship = readMessage.getShipHashMap();
+		
+		for (Integer mmsi : shipMMSI){
+			
+			shipLat = ship.get(mmsi).getShipLatitude();
+			shipLon = ship.get(mmsi).getShipLongitude();
+			
+			shipBow = ship.get(mmsi).getShipBow();
+			shipPor = ship.get(mmsi).getShipPort();
+			shipSta = ship.get(mmsi).getShipStarboard();
+			shipSte = ship.get(mmsi).getShipStern();
+			
+			if ((shipBow != 0 || shipPor !=0 || shipSta != 0 || shipSte != 0 ) &&
+			   ( (latitude - diff < shipLat && latitude + diff > shipLat) &&
+	      	   ( (longitude -diff < shipLon && longitude +diff > shipLon)))) {
+				
+				float digitalLatitude = (float) ((((shipLat-latitude)*100) / 1.853)*500);
+				float digitalLongitude =(float) ((((shipLon-longitude)*100) / 1.853)*500);
+				
+				buildBoats(digitalLatitude,digitalLongitude,shipSte,shipSta);	// the multiply is used to scale the world
+				System.out.print(mmsi + "\n" + shipBow + "   " + shipPor + "   " + shipSta + "   " + shipSte + "\n");
+				System.out.print(ship.get(mmsi).getShipLatitude() + "   " + digitalLatitude + "\n" + ship.get(mmsi).getShipLongitude() + "   " + digitalLongitude + "\n\n");
+			}
+		}
+	}
 
     @Override
     public void bind(Nifty arg0, Screen arg1) {
