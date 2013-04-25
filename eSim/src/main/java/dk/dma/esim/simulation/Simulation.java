@@ -7,6 +7,7 @@ import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 
+
 public class Simulation extends SimpleApplication implements ActionListener, ScreenController {
 
     public static void main(String[] args) {
@@ -16,12 +17,13 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         aps.setResolution(1024, 768);
         app.setSettings(aps);
         app.showSettings = false;
+        
         app.start();
     }
 
     @Override
     public void simpleInitApp() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void onAction(String string, boolean bln, float f) {
