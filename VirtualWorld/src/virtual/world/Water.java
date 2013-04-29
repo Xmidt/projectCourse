@@ -35,8 +35,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import ais.reader.AisShip;
 import ais.reader.ReadMessage;
-import ais.reader.Ship;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
@@ -53,7 +53,6 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Plane;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
@@ -87,19 +86,15 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
     private FilterPostProcessor fpp;
     private float rudderAngle = 0.0f;
     
-    private Nifty nifty;					// Nifty package which contain the background of the compass
     private Node compassNode;				// The gui of the compass needle
     
     private ReadMessage readMessage;		// Class which handle ais messages
     
     private List<String> aislibMMSI;
     
-    /*
-     * Vairables used for testing
-     */
-    private float latitude;
-    private float longitude;
-    private float diff;
+    private Ship world;
+    
+    private boolean drawingAisShip;
 
     public static void main(String[] args) {
         Water app = new Water();
@@ -124,16 +119,22 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
          * Latitude and longitude variables are used to define origin.
          * 	The length of 1 minute of latitude is 1.853 km
          */
-		latitude = 55.4149920f;
-		longitude = 12.3649320f;
-		diff = 0.2f;
+		float latitude = 55.4149920f;
+		float longitude = 12.3649320f;
+		int diff = 20;
+		int scale = 10000;
+		world = new Ship(latitude, longitude);
+		world.setDrawDistance(diff);
+		world.setScale(scale);
 		
         /*
-         * Creates node for water and skybox
+         * Creates node for water, skybox, and other vairous notes
          */
         Node mainScene = new Node("Main Scene");
         rootNode.attachChild(mainScene);
-
+        vehicleNode = new Node("Virtual ship");
+        camNode = new CameraNode("Camera Node", cam);
+        
         /*
          * Skybox settings
          */
@@ -148,10 +149,6 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
         AmbientLight al = new AmbientLight();
         al.setColor(ColorRGBA.White.mult(1000.3f));
         rootNode.addLight(al);
-
-        vehicleNode = new Node("vehicleNode");
-
-        camNode = new CameraNode("Camera Node", cam);
 
         /*
          * Turn off status window
@@ -196,6 +193,7 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
          * Initiate locally used variables
          */
         aislibMMSI = new ArrayList<>();
+        drawingAisShip = false;        
         
         setupKeys();
         buildWorld();
@@ -204,9 +202,63 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
         initiateBoats();
     }
     
-    private void convertLatLon(){
-    	System.out.println(vehicleNode.getLocalTranslation());
+    /*
+     * converts ships digital location to latitude and longitude coordinates from its initiated (origin) position,
+     * which is defined when constructing the virtual ship.
+     */
+    private void updateShipCoordinates() {
+    	float initiatedLatitude = world.getLatitude();
+    	float initiatedLongitude = world.getLongitude();
+    	
+    	float digitalLatitude = vehicleNode.getLocalTranslation().getZ();
+    	float digitalLongitude = vehicleNode.getLocalTranslation().getX();
+    	
+    	int scale = world.getScale();
+    	
+    	float newLatitude = (digitalLatitude / scale) + initiatedLatitude;
+    	float newLongitude = (digitalLongitude / scale) + initiatedLongitude;
+    	
+    	world.setCurrentCooridnates(newLatitude, newLongitude);
     }
+    
+    /*
+     * Insert ships from the ais messenger into the virtual world 
+     */
+	private void aisMessageHandler(){
+		drawingAisShip = true;
+		
+		float currentLatitude = world.getCurrentLatitude();
+		float currentLongitude = world.getCurrentLongitude();
+		
+		float originLatitude = world.getLatitude();
+		float originLongitude = world.getLongitude();
+		
+		float draw = (float) world.getDrawDistance() / 100;
+		int scale = world.getScale();
+		
+		ArrayList<Integer> shipMMSI = readMessage.getShipMmsi();
+		HashMap<Integer,AisShip> aisShip = readMessage.getShipHashMap();
+		
+		for (Integer mmsi : shipMMSI){
+			
+			double aisLatitude = aisShip.get(mmsi).getShipLatitude();
+			double aisLongitude = aisShip.get(mmsi).getShipLongitude();
+			
+			if (currentLatitude  - draw < aisLatitude  && currentLatitude  + draw > aisLatitude &&
+	      	    currentLongitude - draw < aisLongitude && currentLongitude + draw > aisLongitude ) {
+				
+				int shipWidth = aisShip.get(mmsi).getShipStarboard();	// Width
+				int shipLength = aisShip.get(mmsi).getShipStern();		// Length
+				
+				float digitalLatitude = (float) (aisLatitude-originLatitude)*scale;
+				float digitalLongitude =(float) (aisLongitude-originLongitude)*scale;
+				
+				buildBoats(mmsi.toString(),digitalLatitude,digitalLongitude,shipLength,shipWidth);
+			}
+		}
+		
+		drawingAisShip = false;
+	}
 
     /*
      * Key listener
@@ -220,7 +272,6 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
         inputManager.addMapping("ToggleCamera", new KeyTrigger(KeyInput.KEY_X));
         inputManager.addMapping("ToggleWater", new KeyTrigger(KeyInput.KEY_V));
         inputManager.addMapping("InfoDump", new KeyTrigger(KeyInput.KEY_I));
-        inputManager.addMapping("InfoDumpAisMessage", new KeyTrigger(KeyInput.KEY_O));
         inputManager.addListener(this, "Lefts");
         inputManager.addListener(this, "Rights");
         inputManager.addListener(this, "Ups");
@@ -229,7 +280,6 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
         inputManager.addListener(this, "ToggleCamera");
         inputManager.addListener(this, "ToggleWater");
         inputManager.addListener(this, "InfoDump");
-        inputManager.addListener(this, "InfoDumpAisMessage");
     }
 
     /*
@@ -367,7 +417,12 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
     
          if(rootNode.hasChild(vehicleNode)) updateShipPosition(vehicleNode);
          rotateCompassNeedle(vehicleNode.getLocalRotation());
-         convertLatLon();
+         updateShipCoordinates();
+         
+         // Only check if the method is currently not running
+         if (!drawingAisShip) {
+        	 aisMessageHandler();
+         }
          
     }
 
@@ -440,64 +495,6 @@ public class Water extends SimpleApplication implements ActionListener, ScreenCo
     	Quaternion rotation = new Quaternion(0, 0, quaternion.getY(), quaternion.getW());
     	compassNode.setLocalRotation(rotation);
     }
-    
-    /*
-     * Used to test the ReadMessage class and draw ships
-     * 
-     * 	Hotkey: o
-     * 
-     * TODO:
-     * 	Name the nodes with the ship mmsi.
-     * 	Check if the mmsi node is already represented, if so update the current note.
-     * 
-     * 	When done testing, the ais handler should be added to simpleUpdate(), to keep all the ships locations up to date.
-     */
-	private void aisMessageHandler(){
-		
-		double shipLat = 0;
-		double shipLon = 0;
-		
-		int shipSta = 0;
-		int shipSte = 0;
-		
-		ArrayList<Integer> shipMMSI = readMessage.getShipMmsi();
-		HashMap<Integer,Ship> ship = readMessage.getShipHashMap();
-		
-		for (Integer mmsi : shipMMSI){
-			
-			shipLat = ship.get(mmsi).getShipLatitude();
-			shipLon = ship.get(mmsi).getShipLongitude();
-			
-			shipSta = ship.get(mmsi).getShipStarboard();	// Width
-			shipSte = ship.get(mmsi).getShipStern();		// Length
-			
-			float digitalLatitude = (float) (shipLat-latitude)*1000;
-			float digitalLongitude =(float) (shipLon-longitude)*1000;
-			
-			if ( ( (latitude - diff < shipLat && latitude + diff > shipLat) &&
-	      	   ( (longitude -diff < shipLon && longitude +diff > shipLon)))) {
-				System.out.println(digitalLatitude + " ==> " + shipLat + "\n");
-				System.out.println(digitalLongitude + " ==> " + shipLon + "\n");
-				buildBoats(mmsi.toString(),digitalLatitude,digitalLongitude,shipSte,shipSta);
-			}
-				
-			
-			
-//			if ((shipBow != 0 || shipPor !=0 || shipSta != 0 || shipSte != 0 ) &&
-//			   ( (latitude - diff < shipLat && latitude + diff > shipLat) &&
-//	      	   ( (longitude -diff < shipLon && longitude +diff > shipLon)))) {
-//				
-//				float digitalLatitude = (float) ((((shipLat-latitude)*100) / 1.853)*500);
-//				float digitalLongitude =(float) ((((shipLon-longitude)*100) / 1.853)*500);
-//				
-//				String mmsiString = mmsi.toString();
-//				
-//				buildBoats(mmsiString,digitalLatitude,digitalLongitude,shipSte,shipSta);	// the multiply is used to scale the world
-//				System.out.print(mmsi + "\n" + shipBow + "   " + shipPor + "   " + shipSta + "   " + shipSte + "\n");
-//				System.out.print(ship.get(mmsi).getShipLatitude() + "   " + digitalLatitude + "\n" + ship.get(mmsi).getShipLongitude() + "   " + digitalLongitude + "\n\n");
-//			}
-		}
-	}
 
     @Override
     public void bind(Nifty arg0, Screen arg1) {

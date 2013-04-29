@@ -2,7 +2,7 @@ package ais.reader;
 
 import dk.dma.ais.message.AisMessage;
 
-public class Ship {
+public class AisShip {
 
 	private int mmsi;
 	
@@ -16,22 +16,22 @@ public class Ship {
 	
 	private AisMessage aisMessage;
 	
-	Ship(int mmsi) {
+	AisShip(int mmsi) {
 		this.mmsi = mmsi;
 	}
 	
-	Ship(int mmsi, AisMessage aisMessage) {
+	AisShip(int mmsi, AisMessage aisMessage) {
 		this.mmsi = mmsi;
 		this.aisMessage = aisMessage;
 	}
 	
-	Ship(int mmsi, double latitude, double longitude) {
+	public AisShip(int mmsi, double latitude, double longitude) {
 		this.mmsi = mmsi;
 		this.latitude = latitude;
 		this.longitude = longitude;
 	}
 	
-	Ship(int mmsi, double latitude, double longitude, AisMessage aisMessage) {
+	AisShip(int mmsi, double latitude, double longitude, AisMessage aisMessage) {
 		this.mmsi = mmsi;
 		this.latitude = latitude;
 		this.longitude = longitude;
