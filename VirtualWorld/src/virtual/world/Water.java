@@ -31,7 +31,7 @@
  */
 
 
-package virtualworld;
+package virtual.world;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
