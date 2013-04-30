@@ -32,12 +32,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>dk.dma.enav</groupId>
-      <artifactId>enav-model</artifactId>
-      <version>0.1-SNAPSHOT</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
       <groupId>dk.dma.ais</groupId>
       <artifactId>ais-messages</artifactId>
       <version>0.1-SNAPSHOT</version>
@@ -199,22 +193,4 @@
             <version>3.0.0</version>
         </dependency>
   </dependencies>
-  <!--build>
-  <resources>
-      <resource>
-        <filtering>false</filtering>
-        <directory>${basedir}/src/main/natives</directory>
-        <includes>
-          <include>liblwjgl64.so</include>
-        </includes>
-      </resource>
-      <resource>
-        <filtering>false</filtering>
-        <directory>${basedir}/src/main/natives</directory>
-        <includes>
-          <include>libopenal64.so</include>
-           </includes>
-      </resource>
-  </resources>
-  </build-->
 </project>
