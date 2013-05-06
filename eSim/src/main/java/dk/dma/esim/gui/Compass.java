@@ -42,7 +42,9 @@ public class Compass {
 
     }
 
-    public void rotate(Quaternion rotation) {
-        compassNode.setLocalRotation(rotation);
+    public void rotate(Quaternion rotation) {    
+        compassNode.setLocalRotation(new Quaternion(0,0,rotation.getY(), rotation.getW()));
     }
+    
+    
 }

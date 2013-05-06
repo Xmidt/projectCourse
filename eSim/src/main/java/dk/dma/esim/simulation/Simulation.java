@@ -81,39 +81,6 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     }
 
     /*
-     * Used to draw boats with information obtained from ais messages
-     */
-//    public void buildBoats(String mmsi, float latitude, float longitude, int length, int width) {
-//
-//        if (!aislibMMSI.contains(mmsi)) {
-//
-//            Material wood = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-//            wood.setTexture("ColorMap", assetManager.loadTexture(new TextureKey("Models/Boat/boat.png", false)));
-//
-//            ship = assetManager.loadModel("Models/Boat/boat.mesh.xml");
-//            ship.setMaterial(wood);
-//
-//	        ship.scale(width/2, 1.5f, length/2);
-//            ship.scale(1.5f, 100.5f, 1.5f);
-//            ship.setLocalTranslation(latitude, 1.5f, longitude);
-//
-//            ship.setName(mmsi);
-//
-//            rootNode.attachChild(ship);
-//            aislibMMSI.add(mmsi);
-//
-//        }
-//    }
-//
-//    private void initiateBoats() {
-//        Material wood = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-//        wood.setTexture("ColorMap", assetManager.loadTexture(new TextureKey("Models/Boat/boat.png", false)));
-//
-//        ship = assetManager.loadModel("Models/Boat/boat.mesh.xml");
-//        ship.setMaterial(wood);
-//    }
-
-    /*
      * Draws the boat in the virtual world:
      * This could probably be handles a little nicer. Possibly make some methods in
      * virtualShip to ease future creation of objects in the world.
@@ -188,10 +155,9 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
             if (actor != null && actor.isValid()) {
                 actor.update();
+                compass.rotate(actor.getNode().getLocalRotation());
             }
 
-            //rotateCompassNeedle(vehicleNode.getLocalRotation());
-            //convertLatLon();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -267,8 +233,6 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
                 toggleCamera();
             } else if (binding.equals("InfoDump")) {
                 printShipInfo();
-            } else if (binding.equals("InfoDumpAisMessage")) {
-                //aisMessageHandler();
             }
         }
     }
