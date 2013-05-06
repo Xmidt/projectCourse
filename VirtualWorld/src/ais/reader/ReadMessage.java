@@ -36,7 +36,7 @@ public class ReadMessage extends Thread {
 	private final Integer port = 4001;
 	
 	private CopyOnWriteArrayList<Integer> shipMmsi;
-	private HashMap<Integer,Ship> shipHashMap;
+	private HashMap<Integer,AisShip> shipHashMap;
 	
 	public ReadMessage() {
 		shipMmsi = new CopyOnWriteArrayList <>();
@@ -65,18 +65,18 @@ public class ReadMessage extends Thread {
 		return tempShipMmsi;
 	}
 	
-	public HashMap<Integer,Ship> getShipHashMap(){
+	public HashMap<Integer,AisShip> getShipHashMap(){
 		return shipHashMap;
 	}
 	
 	private void createShipHashMap(AisMessage aisMessage) {
 		int mmsi = aisMessage.getUserId();
-		Ship ship = null;
+		AisShip ship = null;
 		
 		if (shipHashMap.containsKey(mmsi)) {
 			ship = shipHashMap.get(mmsi);
 		} else {
-			ship = new Ship(mmsi, aisMessage);
+			ship = new AisShip(mmsi, aisMessage);
 		}
 		
 		if (aisMessage instanceof AisPositionMessage) {
