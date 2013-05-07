@@ -20,7 +20,7 @@
     <repository>
         <id>in-project</id>
         <name>In Project Repo</name>
-        <url>file:///home/mads/git/projectCourse/eSim/repo</url>
+        <url>file:///${project.basedir}/repo</url>
     </repository>   
   </repositories>
 
