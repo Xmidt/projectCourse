@@ -43,7 +43,7 @@ public class Sky {
         rootNode.attachChild(sky);
         
         sun = new DirectionalLight();
-        sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f).normalizeLocal());
+        sun.setDirection(new Vector3f(0.1f, -0.7f, 1.0f).normalizeLocal());
         rootNode.addLight(sun);
         
         ambientLight = new AmbientLight();

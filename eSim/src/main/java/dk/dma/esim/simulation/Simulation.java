@@ -91,11 +91,12 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         try {
             actor = new VirtualBasicShip();
 
-            actor.setSpatial(assetManager.loadModel("Models/Boat/boat.mesh.xml"));
-            actor.setMaterial(new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
-            actor.getMaterial().setTexture("ColorMap", assetManager.loadTexture(new TextureKey("Models/Boat/boat.png", false)));
+            actor.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
+//            actor.setMaterial(new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
+//            actor.getMaterial().setTexture("ColorMap", assetManager.loadTexture(new TextureKey("Models/Boat/boat.png", false)));
             actor.getSpatial().scale(1.5f, 1.5f, 1.5f);
-            actor.getSpatial().setLocalTranslation(0.0f, 1.5f, 0.0f);
+            actor.getSpatial().setLocalTranslation(0.0f, -2.0f, 0.0f);
+            actor.getSpatial().rotate(0.0f, -1.5f, 0.0f);
             actor.getNode().attachChild(actor.getSpatial());
 
             rootNode.attachChild(actor.getNode());
@@ -201,7 +202,6 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         inputManager.addListener(this, "InfoDumpAisMessage");
     }
 
-    @Override
     public void onAction(String binding, boolean value, float tpf) {
         if (value) {
             if (binding.equals("Lefts")) {
