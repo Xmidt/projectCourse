@@ -233,6 +233,8 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
                 toggleCamera();
             } else if (binding.equals("InfoDump")) {
                 printShipInfo();
+            } else if (binding.equals("InfoDumpAisMessage")) {
+                //aisMessageHandler();
             }
         }
     }
