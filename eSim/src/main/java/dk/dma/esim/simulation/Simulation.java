@@ -17,7 +17,7 @@ import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import dk.dma.esim.ais.AisShip;
-import dk.dma.esim.ais.ReadMessage;
+import dk.dma.esim.ais.ReadMessage;     
 import dk.dma.esim.gui.Compass;
 import dk.dma.esim.virtualship.VirtualShip;
 import dk.dma.esim.virtualworld.Sky;
