@@ -19,8 +19,9 @@ import de.lessvoid.nifty.screen.ScreenController;
 import dk.dma.esim.ais.AisShip;
 import dk.dma.esim.ais.ReadMessage;
 import dk.dma.esim.gui.Compass;
-import dk.dma.esim.virtualship.VirtualBasicShip;
+import dk.dma.esim.virtualship.VirtualShip;
 import dk.dma.esim.virtualworld.Sky;
+import dk.dma.esim.virtualworld.VirtualWorld;
 import dk.dma.esim.virtualworld.Water;
 
 public class Simulation extends SimpleApplication implements ActionListener, ScreenController {
@@ -28,11 +29,10 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     private float latitude;
     private float longitude;
     private float diff;
-    private Water water;
-    private Sky sky;
     private boolean fixedCamera = false;
+    private VirtualWorld world;
     private CameraNode camNode;
-    private VirtualBasicShip actor = null;
+    private VirtualShip actor = null;
     private Compass compass;
     
     private ReadMessage readAisMessage;
@@ -73,13 +73,10 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             setDisplayFps(false);
             setDisplayStatView(false);
 
-            sky = new Sky(rootNode, assetManager);
-            water = new Water(rootNode, viewPort, assetManager);
-            compass = new Compass(assetManager, guiNode, settings.getHeight(), settings.getWidth());
-
             readAisMessage = new ReadMessage();
             readAisMessage.start();
 
+            buildWorld();
             setupKeys();
             toggleCamera();
 
@@ -89,6 +86,23 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
     }
 
+    
+    /*
+     * Initializes the virtual World:
+     * 
+     */
+    public void buildWorld() {
+        try {
+            
+            world = new VirtualWorld(rootNode,assetManager,viewPort); 
+            
+            compass = new Compass(assetManager, guiNode, settings.getHeight(), settings.getWidth());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     /*
      * Draws the boat in the virtual world:
      * This could probably be handles a little nicer. Possibly make some methods in
@@ -98,7 +112,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
      */
     public void buildBoat() {
         try {
-            actor = new VirtualBasicShip();
+            actor = new VirtualShip();
 
             actor.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
 //            actor.setMaterial(new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
@@ -255,7 +269,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
                 }
 
             } else if (binding.equals("ToggleWater")) {
-                System.out.println("Water " + water.toggleWater());
+                System.out.println("Water " + world.getWater().toggleWater());
             } else if (binding.equals("ToggleCamera")) {
                 toggleCamera();
             } else if (binding.equals("InfoDump")) {

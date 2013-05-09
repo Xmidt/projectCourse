@@ -1,27 +1,22 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package dk.dma.esim.virtualworld;
 
-import dk.dma.ais.message.AisPositionMessage;
-import dk.dma.enav.model.geometry.Position;
+import com.jme3.asset.AssetManager;
+import com.jme3.renderer.ViewPort;
+import com.jme3.scene.Node;
 
-public abstract class VirtualWorld implements IVirtualWorld {
+/**
+ *
+ * @author mads
+ */
+public class VirtualWorld extends AbstractVirtualWorld {
     
-    protected AisPositionMessage[] fullShipList;
-    protected Position position;
-    protected int heading;
-    
-    public void updatePos(Position pos){
-        this.position = pos;
+    public VirtualWorld(Node rootNode, AssetManager assetManager, ViewPort viewPort){
+        sky = new Sky(rootNode, assetManager);
+        water = new Water(rootNode, viewPort, assetManager);
     }
-    
-    public void updateHeading(int heading){
-        this.heading = heading;
-    }
-    
-    public void setFullShipList(AisPositionMessage[] list){
-        this.fullShipList = list;
-    }
-    
-    public void updateVisible(){
-        
-    }
+
 }

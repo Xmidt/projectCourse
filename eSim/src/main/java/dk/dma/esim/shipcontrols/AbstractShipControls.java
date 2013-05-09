@@ -1,11 +1,11 @@
 package dk.dma.esim.shipcontrols;
 
-import dk.dma.esim.virtualship.VirtualShip;
+import dk.dma.esim.virtualship.AbstractVirtualShip;
 
-public abstract class ShipControls implements IShipControls{
-	VirtualShip ship;
+public abstract class AbstractShipControls implements IShipControls{
+	AbstractVirtualShip ship;
 	
-	public ShipControls(VirtualShip ship){
+	public AbstractShipControls(AbstractVirtualShip ship){
 		this.ship = ship;
 	}
 
