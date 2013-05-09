@@ -1,5 +1,8 @@
 package dk.dma.esim.simulation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.input.KeyInput;
@@ -13,6 +16,8 @@ import com.jme3.system.AppSettings;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
+import dk.dma.esim.ais.AisShip;
+import dk.dma.esim.ais.ReadMessage;
 import dk.dma.esim.gui.Compass;
 import dk.dma.esim.virtualship.VirtualBasicShip;
 import dk.dma.esim.virtualworld.Sky;
@@ -29,6 +34,9 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     private CameraNode camNode;
     private VirtualBasicShip actor = null;
     private Compass compass;
+    
+    private ReadMessage readAisMessage;
+    private boolean readingAis = false;
 
     public static void main(String[] args) {
         Simulation app = new Simulation();
@@ -69,10 +77,11 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             water = new Water(rootNode, viewPort, assetManager);
             compass = new Compass(assetManager, guiNode, settings.getHeight(), settings.getWidth());
 
+            readAisMessage = new ReadMessage();
+            readAisMessage.start();
 
             setupKeys();
             toggleCamera();
-            //initiateBoats();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -151,8 +160,11 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
     @Override
     public void simpleUpdate(float tpf) {
+    	if (!readingAis) {
+    		drawAisShip();
+    	}
+    	
         try {
-
 
             if (actor != null && actor.isValid()) {
                 actor.update();
@@ -162,6 +174,21 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    private void drawAisShip() {
+    	readingAis = true;
+    	
+    	ArrayList<Integer> shipMMSI = readAisMessage.getShipMmsi();
+		HashMap<Integer,AisShip> ship = readAisMessage.getShipHashMap();
+		
+		for (Integer mmsi : shipMMSI) {
+			// TODO: add ais ships to virtual world
+			System.out.print(mmsi + "\n");
+		}
+		
+    	
+    	readingAis = false;
     }
 
     /**
