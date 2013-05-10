@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package dk.dma.esim.gui;
 
 import com.jme3.asset.AssetManager;
@@ -11,17 +7,24 @@ import com.jme3.ui.Picture;
 
 /**
  *
- * @author mads
+ * @author Team Echo
  */
 public class Compass {
 
     private Node compassNode;
     private Node guiNode;
 
+    /**
+     * Creates a compass with needle, in JME gui interface
+     * 
+     * @param assetManager	Default library of JME models, textures and etc. etc.
+     * @param guiNode		guiNode interface in JME
+     * @param windowHeight	Height of the JME window
+     * @param windowWidth	Width of the JME iwndow
+     */
     public Compass(AssetManager assetManager, Node guiNode, int windowHeight, int windowWidth) {
-        /*
-         * Creates a compass with needle, in JME gui interface
-         */
+
+    	// Compass background
         this.guiNode = guiNode;
         Picture pic = new Picture("Compass HUD");
         pic.setImage(assetManager, "Interface/compassWithBackground.png", true);
@@ -30,6 +33,7 @@ public class Compass {
         pic.move(windowWidth - (windowHeight / 4), windowHeight - (windowHeight / 4), 0);
         guiNode.attachChild(pic);
 
+        // Compass needle
         compassNode = new Node("Compass needle");
         guiNode.attachChild(compassNode);
         pic = new Picture("Compass needle HUD");
@@ -42,6 +46,11 @@ public class Compass {
 
     }
 
+    /**
+     * Rotating the compass needle in the plane of the guiNode
+     * 
+     * @param rotation in the quaternion number system
+     */
     public void rotate(Quaternion rotation) {    
         compassNode.setLocalRotation(new Quaternion(0,0,rotation.getY(), rotation.getW()));
     }

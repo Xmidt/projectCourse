@@ -5,6 +5,11 @@ import dk.dma.esim.virtualship.AbstractVirtualShip;
 public abstract class AbstractShipControls implements IShipControls{
 	AbstractVirtualShip ship;
 	
+	/**
+	 * Initiate the ship class
+	 * 
+	 * @param ship
+	 */
 	public AbstractShipControls(AbstractVirtualShip ship){
 		this.ship = ship;
 	}

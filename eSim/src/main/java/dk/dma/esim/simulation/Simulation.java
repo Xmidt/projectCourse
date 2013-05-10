@@ -17,7 +17,7 @@ import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import dk.dma.esim.ais.AisShip;
-import dk.dma.esim.ais.ReadMessage;
+import dk.dma.esim.ais.ReadMessage;     
 import dk.dma.esim.gui.Compass;
 import dk.dma.esim.virtualship.VirtualShip;
 import dk.dma.esim.virtualworld.Sky;
@@ -49,7 +49,16 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     }
 
     /**
-     * This method is invoked app start in main.
+     * This is the main class for JME
+     * Defines all the settings for the engine.
+     * 
+     * Furthermore creates rootnode and guinode's
+     * 
+     * Also handle the key listing and camera controls
+     */
+    
+    /**
+     * Main method of JME, which initiate the 3D rendered world.
      */
     @Override
     public void simpleInitApp() {
@@ -65,6 +74,9 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             longitude = 12.3649320f;
             diff = 0.2f;
 
+            /*
+             * Creating a single camera node
+             */
             camNode = new CameraNode("Camera Node", cam);
 
             /*
@@ -73,9 +85,15 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             setDisplayFps(false);
             setDisplayStatView(false);
 
+            /*
+             * Starting the AisMessage reading thread
+             */
             readAisMessage = new ReadMessage();
             readAisMessage.start();
 
+            /*
+             * Render the world, setup keys and camera
+             */
             buildWorld();
             setupKeys();
             toggleCamera();
@@ -88,8 +106,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
     
     /*
-     * Initializes the virtual World:
-     * 
+     * Initializes the virtual World, and add a compass to the guiNode 
      */
     public void buildWorld() {
         try {
@@ -172,12 +189,22 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         }
     }
 
+    /**
+     * JME updates itself depending on the current frame rate.
+     * 
+     * This method is used to update the surrounding of the world.
+     * 	The compass gui.
+     * 	Real world ships obtained from AisMessages
+     */
     @Override
     public void simpleUpdate(float tpf) {
+    	
+    	// Check for ship in current draw distance should be drawn or updated
     	if (!readingAis) {
     		drawAisShip();
     	}
     	
+    	// Compass needle rotation
         try {
 
             if (actor != null && actor.isValid()) {
@@ -190,6 +217,9 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         }
     }
     
+    /**
+     * Draw real world ship, obtained from AisMessages
+     */
     private void drawAisShip() {
     	readingAis = true;
     	
@@ -206,6 +236,12 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     }
 
     /**
+     * Prints the user control ships info, with the 3D world variables.
+     * 	position
+     * 	rotation
+     *  speed
+     *  rudder angle
+     * 
      * Hotkey: I
      */
     private void printShipInfo() {
@@ -243,24 +279,33 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         inputManager.addListener(this, "InfoDumpAisMessage");
     }
 
+    /**
+     * on key press action handler.
+     */
     public void onAction(String binding, boolean value, float tpf) {
         if (value) {
+        	
+        	// Ship turning
             if (binding.equals("Lefts")) {
 
                 actor.incrementRudder();
 
+            // Ship turning
             } else if (binding.equals("Rights")) {
 
                 actor.decrementRudder();
 
+            // ship speed increment
             } else if (binding.equals("Ups")) {
 
                 actor.setForwardSpeed(actor.getForwardSpeed() + 1); //make proper method
 
+            // ship speed decrement
             } else if (binding.equals("Downs")) {
 
                 actor.setForwardSpeed(actor.getForwardSpeed() - 1);
 
+            // draw the user controlled boat
             } else if (binding.equals("Space")) {
 
                 if (actor == null) {
@@ -268,12 +313,22 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
                     buildBoat();
                 }
 
+            // toggle between real rendered water, or blue square representing water
             } else if (binding.equals("ToggleWater")) {
+            	
                 System.out.println("Water " + world.getWater().toggleWater());
+                
+            // fix camera to boat, or free view and controlled camera
             } else if (binding.equals("ToggleCamera")) {
+            	
                 toggleCamera();
+                
+            // user controlled ship variables from 3D world system print
             } else if (binding.equals("InfoDump")) {
+            	
                 printShipInfo();
+                
+            // TODO properly not needed in the future, delete later on
             } else if (binding.equals("InfoDumpAisMessage")) {
                 //aisMessageHandler();
             }

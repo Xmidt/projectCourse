@@ -18,7 +18,7 @@ public class AisShip implements IVirtualShip {
 	private AisMessage aisMessage;
 	
 	AisShip(AisMessage aisMessage) {
-	this.aisMessage = aisMessage;
+		this.aisMessage = aisMessage;
 	}
 	
 	public void setSpeed(int speed) {

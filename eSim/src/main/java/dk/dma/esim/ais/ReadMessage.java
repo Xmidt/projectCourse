@@ -15,17 +15,6 @@ import dk.dma.ais.reader.AisTcpReader;
 import dk.dma.enav.model.geometry.Position;
 import dk.dma.enav.util.function.Consumer;
 
-/*
- * The following libraries are needed for the Ais TCP reader:
- * 
- * 	ais-communication.jar		// AisLib
- * 	ais-messages.jar			// AisLib
- * 	commons-lang.jar
- * 	dma-commons-util.jar
- * 	enav-model.jar				// e-Navigation
- * 	enav-util.jar				// e-Navigation
- * 	slf4j-api.jar
- */
 
 public class ReadMessage extends Thread {
 
@@ -38,11 +27,17 @@ public class ReadMessage extends Thread {
 	private CopyOnWriteArrayList<Integer> shipMmsi;
 	private HashMap<Integer,AisShip> shipHashMap;
 	
+	/**
+	 * Constructor to initiate List of mmsi, and HashMap<mmsi,AisShip>
+	 */
 	public ReadMessage() {
 		shipMmsi = new CopyOnWriteArrayList <Integer>();
 		shipHashMap = new HashMap<Integer, AisShip>();
 	}
 	
+	/**
+	 * Initiate threading of the class ReadMessage
+	 */
 	public void run() {
 		if (aisStream.toLowerCase().equals("file")) {
 			readText();
@@ -51,10 +46,21 @@ public class ReadMessage extends Thread {
 		}
 	}
 	
+	/**
+	 * Choose between two types of streaming AisMessage
+	 * 	file: reading ais message from a file, usefull for debuggin
+	 * 	tcp: reading ais message trough the dma proxy
+	 * 
+	 * @param arg, type of stream
+	 */
 	public void chooseStream(String arg){
 		aisStream = arg;
 	}
 	
+	/**
+	 * 
+	 * @return ArrayList of current ship mmsi
+	 */
 	public ArrayList<Integer> getShipMmsi(){	
 		ArrayList<Integer> tempShipMmsi = new ArrayList<Integer>();
 		
@@ -65,20 +71,31 @@ public class ReadMessage extends Thread {
 		return tempShipMmsi;
 	}
 	
+	/**
+	 * 
+	 * @return Hashmap with mmsi keys, and values as AisShip class.
+	 */
 	public HashMap<Integer,AisShip> getShipHashMap(){
 		return shipHashMap;
 	}
 	
+	/**
+	 * Creates the AisShip object, and add it to the HashMap, with the coherence mmsi for the ship
+	 * 
+	 * @param aisMessage
+	 */
 	private void createShipHashMap(AisMessage aisMessage) {
 		int mmsi = aisMessage.getUserId();
 		AisShip ship = null;
 		
+		// Check if ship is already in the list, if not, creat a new ship object
 		if (shipHashMap.containsKey(mmsi)) {
 			ship = shipHashMap.get(mmsi);
 		} else {
 			ship = new AisShip(aisMessage);
 		}
 		
+		// Obtain ship geographical latitude and logitude, if possible
 		if (aisMessage instanceof AisPositionMessage) {
 			AisPositionMessage posMessage = (AisPositionMessage)aisMessage;
 			Position position = posMessage.getPos().getGeoLocation();
@@ -90,6 +107,7 @@ public class ReadMessage extends Thread {
 	        }
 		}
 		
+		// Obtain ship length and width, if possible
 	    if (aisMessage instanceof AisStaticCommon) {
 	        AisStaticCommon staticMessage = (AisStaticCommon)aisMessage;
 	        try {
@@ -104,11 +122,14 @@ public class ReadMessage extends Thread {
 
 	    }
 	    
+	    // Add/update the HashMap, add to list
 		shipHashMap.put(mmsi, ship);
-		
 		if (!shipMmsi.contains(mmsi)) shipMmsi.add(mmsi);
 	}
 	
+	/**
+	 * Read the ais message from file
+	 */
 	private void readText() {
 		System.out.print("Reading from textfile\n");
 
@@ -133,13 +154,16 @@ public class ReadMessage extends Thread {
 		}
 	}
 	
+	/**
+	 * Read the ais message from tcp (dma proxy)
+	 */
 	private void readTCP() {
 		System.out.println("Reading from TCP\n");
 		
 		AisTcpReader reader = new AisTcpReader(URL, port);
 		reader.registerHandler(new Consumer<AisMessage>() {         
 		    public void accept(AisMessage aisMessage) {
-		        System.out.println("message id: " + aisMessage.getMsgId());
+//		        System.out.println("message id: " + aisMessage.getMsgId());
 		        createShipHashMap(aisMessage);
 		    }
 		});
