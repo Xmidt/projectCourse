@@ -135,8 +135,9 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 //            actor.setMaterial(new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
 //            actor.getMaterial().setTexture("ColorMap", assetManager.loadTexture(new TextureKey("Models/Boat/boat.png", false)));
             actor.getSpatial().scale(1.5f, 1.5f, 1.5f);
-            actor.getSpatial().setLocalTranslation(0.0f, -2.0f, 0.0f);
+            actor.getSpatial().setLocalTranslation(0.0f, -3.0f, 0.0f);
             actor.getSpatial().rotate(0.0f, -1.5f, 0.0f);
+            //actor.getNode().setLocalTranslation(100f,-3f, 100f);
             actor.getNode().attachChild(actor.getSpatial());
 
             rootNode.attachChild(actor.getNode());
