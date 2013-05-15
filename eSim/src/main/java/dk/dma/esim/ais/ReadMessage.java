@@ -92,7 +92,10 @@ public class ReadMessage extends Thread {
 		if (shipHashMap.containsKey(mmsi)) {
 			ship = shipHashMap.get(mmsi);
 		} else {
-			ship = new AisShip(aisMessage);
+			ship = new AisShip();
+			ship.setShipAisMessage(aisMessage);
+			ship.setNode(String.valueOf(mmsi));
+//			ship.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
 		}
 		
 		// Obtain ship geographical latitude and logitude, if possible
@@ -135,6 +138,7 @@ public class ReadMessage extends Thread {
 
 		AisReader reader = null;
 		try {
+			
 			reader = new AisStreamReader(new FileInputStream(filePath));
 		} catch (FileNotFoundException e1) {
 			// Cannot locate file
@@ -163,7 +167,6 @@ public class ReadMessage extends Thread {
 		AisTcpReader reader = new AisTcpReader(URL, port);
 		reader.registerHandler(new Consumer<AisMessage>() {         
 		    public void accept(AisMessage aisMessage) {
-//		        System.out.println("message id: " + aisMessage.getMsgId());
 		        createShipHashMap(aisMessage);
 		    }
 		});
