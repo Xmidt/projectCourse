@@ -11,6 +11,7 @@ public class AisShip extends AbstractVirtualShip {
 	}
 	
 	public void setNode(String mmsi){
+		this.mmsi = Integer.parseInt(mmsi);
 		this.node = new Node(mmsi);
 	}
 

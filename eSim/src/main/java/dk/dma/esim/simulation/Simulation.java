@@ -255,6 +255,8 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 			// Boat not found
 		}
 		
+		coordinates.newCurrentCoordinates(xCoordinate, zCoordinate);
+		
 		/**
 		 * Loops over all the mmsi (ship unique id) currently in the ArrayList
 		 */
@@ -273,8 +275,8 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 				if (!aisShipsNode.hasChild(aisShip.getNode())){
 					
 					// Ship coordinates for the virtual world
-					float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLatitude());
-					float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLongitude());
+					float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLongitude());
+					float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLatitude());
 					
 					// Model settings
 					aisShip.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
@@ -287,7 +289,13 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 					
 					// Attach the ship node, to the node containing all the real ships in the virtual world
 					aisShipsNode.attachChild(aisShip.getNode());
+					
+					System.out.println(aisShip.getShipBow());
+					System.out.println(aisShip.getShipLongitude() + "    " + aisShipSpatialX);
+					System.out.println(aisShip.getShipLatitude() + "    " + aisShipSpatialZ);
 				}
+			} else {
+				aisShipsNode.detachChild(aisShip.getNode());
 			}
 		}
 		
@@ -307,6 +315,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     private void printShipInfo() {
         String dump = "";
 
+        dump += "Geographical coordiantes: " + coordinates.getCurrentLongitude() + "    " + coordinates.getCurrentLatitude() + "\n";
         dump += "Local translation (position): " + actor.getNode().getLocalTranslation() + "\n";
         dump += "Local rotation: " + actor.getNode().getLocalRotation() + "\n";
         dump += "Speed (forwardSpeed): " + actor.getForwardSpeed() + "\n";

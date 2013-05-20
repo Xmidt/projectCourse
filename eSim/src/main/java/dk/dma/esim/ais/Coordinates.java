@@ -44,8 +44,8 @@ public class Coordinates {
 	 * @return if the ship should be drawn ´true´, otherwise ´false´
 	 */
 	public boolean checkAis(double aisLatitude, double aisLongitude) {
-		double diffX = Math.abs(aisLatitude - currentLatitude);
-		double diffZ = Math.abs(aisLongitude - currentLongitude);
+		double diffZ = Math.abs(aisLatitude - currentLatitude);
+		double diffX = Math.abs(aisLongitude - currentLongitude);
 		if (diffX < drawDistance && diffZ < drawDistance) {
 			return true;
 		} else {
@@ -62,8 +62,8 @@ public class Coordinates {
 	 * @param virtualSpatialZ virtual ship JME spatial z axe value
 	 */
 	public void newCurrentCoordinates(float virtualSpatialX, float virtualSpatialZ) {
-		currentLatitude = latitude + virtualSpatialX / scale;
-		currentLongitude = longitude + virtualSpatialZ / scale;
+		currentLatitude = latitude + virtualSpatialZ / scale;
+		currentLongitude = longitude + (-1 * (virtualSpatialX / scale));
 	}
 	
 	/**
@@ -102,21 +102,21 @@ public class Coordinates {
 	
 	/**
 	 * 
-	 * @param latitude
+	 * @param longitude
 	 * @return float value for the spatial x axe, to place the ais ship in JME
 	 */
-	public float getAisSpatialX(double latitude) {
-		float spatialX = (float) (currentLatitude - latitude);
+	public float getAisSpatialX(double longitude) {
+		float spatialX = (float) (-1 * (currentLongitude - longitude));
 		return spatialX * scale;
 	}
 	
 	/**
 	 * 
-	 * @param longitude
+	 * @param latitude
 	 * @return float value for the spatial z axe, to place the ais ship in JME
 	 */
-	public float getAisSpatialZ(double longitude) {
-		float spatialZ = (float) (currentLongitude - longitude);
+	public float getAisSpatialZ(double latitude) {
+		float spatialZ = (float) (currentLatitude - latitude);
 		return spatialZ * scale;
 	}
 
