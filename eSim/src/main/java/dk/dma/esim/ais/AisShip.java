@@ -15,5 +15,4 @@ public class AisShip extends AbstractVirtualShip {
 		this.node = new Node(mmsi);
 	}
 
-
 }

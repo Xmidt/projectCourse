@@ -106,7 +106,7 @@ public class Coordinates {
 	 * @return float value for the spatial x axe, to place the ais ship in JME
 	 */
 	public float getAisSpatialX(double longitude) {
-		float spatialX = (float) (-1 * (currentLongitude - longitude));
+		float spatialX = (float) (currentLongitude - longitude);
 		return spatialX * scale;
 	}
 	
@@ -116,7 +116,7 @@ public class Coordinates {
 	 * @return float value for the spatial z axe, to place the ais ship in JME
 	 */
 	public float getAisSpatialZ(double latitude) {
-		float spatialZ = (float) (currentLatitude - latitude);
+		float spatialZ = (float) (-1 * (currentLatitude - latitude));
 		return spatialZ * scale;
 	}
 

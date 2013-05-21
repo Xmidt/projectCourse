@@ -290,7 +290,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 					// Attach the ship node, to the node containing all the real ships in the virtual world
 					aisShipsNode.attachChild(aisShip.getNode());
 					
-					System.out.println(aisShip.getShipBow());
+					System.out.println(aisShip.getShipMmsi());
 					System.out.println(aisShip.getShipLongitude() + "    " + aisShipSpatialX);
 					System.out.println(aisShip.getShipLatitude() + "    " + aisShipSpatialZ);
 				}
