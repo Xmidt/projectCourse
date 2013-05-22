@@ -19,7 +19,7 @@ public class Compass {
      * @param assetManager	Default library of JME models, textures and etc. etc.
      * @param guiNode		guiNode interface in JME
      * @param windowHeight	Height of the JME window
-     * @param windowWidth	Width of the JME iwndow
+     * @param windowWidth	Width of the JME window
      */
     public Compass(AssetManager assetManager, Node guiNode, int windowHeight, int windowWidth) {
 
