@@ -62,7 +62,7 @@ public class Coordinates {
 	 * @param virtualSpatialZ virtual ship JME spatial z axe value
 	 */
 	public void newCurrentCoordinates(float virtualSpatialX, float virtualSpatialZ) {
-		currentLatitude = latitude + virtualSpatialZ / scale;
+		currentLatitude = latitude + (virtualSpatialZ / scale);
 		currentLongitude = longitude + (-1 * (virtualSpatialX / scale));
 	}
 	
@@ -97,7 +97,7 @@ public class Coordinates {
 	 * @return virtual ship initiated geographical longitude coordinate
 	 */
 	public double getLongitude(){
-		return this.longitude;
+		return longitude;
 	}
 	
 	/**
@@ -106,7 +106,7 @@ public class Coordinates {
 	 * @return float value for the spatial x axe, to place the ais ship in JME
 	 */
 	public float getAisSpatialX(double longitude) {
-		float spatialX = (float) (currentLongitude - longitude);
+		float spatialX = (float) (this.longitude - longitude);
 		return spatialX * scale;
 	}
 	
@@ -116,7 +116,7 @@ public class Coordinates {
 	 * @return float value for the spatial z axe, to place the ais ship in JME
 	 */
 	public float getAisSpatialZ(double latitude) {
-		float spatialZ = (float) (-1 * (currentLatitude - latitude));
+		float spatialZ = (float) (-1 * (this.latitude - latitude));
 		return spatialZ * scale;
 	}
 

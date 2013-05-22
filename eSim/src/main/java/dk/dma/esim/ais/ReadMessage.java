@@ -93,10 +93,25 @@ public class ReadMessage extends Thread {
 			ship = shipHashMap.get(mmsi);
 		} else {
 			ship = new AisShip();
-			ship.setShipAisMessage(aisMessage);
 			ship.setNode(String.valueOf(mmsi));
-//			ship.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
+			
+			// Obtain ship length and width, if possible
+		    if (aisMessage instanceof AisStaticCommon) {
+		        AisStaticCommon staticMessage = (AisStaticCommon)aisMessage;
+		        try {
+		        	ship.setLength(staticMessage.getDimStern());
+		        	ship.setWidth(staticMessage.getDimStarboard());
+		        	
+		        } catch(NullPointerException e) {
+		        	// Ship length and width not found
+		        	ship.setLength(0);
+		        	ship.setWidth(0);
+		        }
+
+		    }
 		}
+		
+		ship.setShipAisMessage(aisMessage);
 		
 		// Obtain ship geographical latitude and logitude, if possible
 		if (aisMessage instanceof AisPositionMessage) {
@@ -110,21 +125,6 @@ public class ReadMessage extends Thread {
 	        }
 		}
 		
-		// Obtain ship length and width, if possible
-	    if (aisMessage instanceof AisStaticCommon) {
-	        AisStaticCommon staticMessage = (AisStaticCommon)aisMessage;
-	        try {
-	        	ship.setLength(staticMessage.getDimStern());
-	        	ship.setWidth(staticMessage.getDimStarboard());
-	        	
-	        } catch(NullPointerException e) {
-	        	// Ship length and width not found
-	        	ship.setLength(0);
-	        	ship.setWidth(0);
-	        }
-
-	    }
-	    
 	    // Add/update the HashMap, add to list
 		shipHashMap.put(mmsi, ship);
 		if (!shipMmsi.contains(mmsi)) shipMmsi.add(mmsi);

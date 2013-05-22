@@ -4,27 +4,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.TextureKey;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
-import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Node;
 import com.jme3.scene.control.CameraControl;
 import com.jme3.system.AppSettings;
+
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import dk.dma.esim.ais.AisShip;
 import dk.dma.esim.ais.Coordinates;
-import dk.dma.esim.ais.ReadMessage;     
+import dk.dma.esim.ais.ReadMessage;
 import dk.dma.esim.gui.Compass;
 import dk.dma.esim.virtualship.VirtualShip;
-import dk.dma.esim.virtualworld.Sky;
 import dk.dma.esim.virtualworld.VirtualWorld;
-import dk.dma.esim.virtualworld.Water;
 
 public class Simulation extends SimpleApplication implements ActionListener, ScreenController {
 
@@ -100,8 +97,8 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             buildWorld();
             setupKeys();
             buildBoat();						// Set boat
-            world.getWater().toggleWater();		// Set water
-            toggleCamera();						// set brigde view
+//          world.getWater().toggleWater();		// Set water
+//          toggleCamera();						// set brigde view
             
             aisShipsNode = new Node("Real world ships");
             rootNode.attachChild(aisShipsNode);
@@ -110,9 +107,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
-
     
     /*
      * Initializes the virtual World, and add a compass to the guiNode 
@@ -141,12 +136,9 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             actor = new VirtualShip();
 
             actor.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
-//            actor.setMaterial(new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
-//            actor.getMaterial().setTexture("ColorMap", assetManager.loadTexture(new TextureKey("Models/Boat/boat.png", false)));
             actor.getSpatial().scale(1.5f, 1.5f, 1.5f);
             actor.getSpatial().setLocalTranslation(0.0f, -3.0f, 0.0f);
             actor.getSpatial().rotate(0.0f, -1.5f, 0.0f);
-            //actor.getNode().setLocalTranslation(100f,-3f, 100f);
             actor.getNode().attachChild(actor.getSpatial());
 
             rootNode.attachChild(actor.getNode());
@@ -209,10 +201,9 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     @Override
     public void simpleUpdate(float tpf) {
     	
-    	// Check for ship in current draw distance should be drawn or updated
+    	//  Insert or remove ships from ais message information
     	if (!readingAis) {
     		drawAisShip();
-    		
     	}
     	
     	// Compass needle rotation
@@ -229,7 +220,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     }
     
     /**
-     * Draw real world ship, obtained from AisMessages
+     * Insert or remove real world ship, obtained from AisMessages
      */
     private void drawAisShip() {
     	
@@ -240,7 +231,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     	float zCoordinate = 0f;
     	
     	/**
-    	 * ArrayList containg all the keys values of the HashMap
+    	 * ArrayList containing all the keys values of the HashMap
     	 * 
     	 * HashMap key values is the mmsi (a ships unique ID), with value Class AisShip 
     	 */
@@ -290,11 +281,10 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 					// Attach the ship node, to the node containing all the real ships in the virtual world
 					aisShipsNode.attachChild(aisShip.getNode());
 					
-					System.out.println(aisShip.getShipMmsi());
-					System.out.println(aisShip.getShipLongitude() + "    " + aisShipSpatialX);
-					System.out.println(aisShip.getShipLatitude() + "    " + aisShipSpatialZ);
 				}
 			} else {
+				
+				// If the ship is out of draw distance, remove it
 				aisShipsNode.detachChild(aisShip.getNode());
 			}
 		}
