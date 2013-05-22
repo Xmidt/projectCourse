@@ -18,6 +18,9 @@ public class Coordinates {
 	 * Parameters to controlling:
 	 * 	scale => Controlling the scale conversions between real coordinates, and the virtual spatial coordinates
 	 * 	draw  => How far away from the current ship to draw real ships (given in arc minutes)
+	 * 
+	 * For a real world perspective:
+	 * Set scale to 10000.
 	 */
 	private int scale = 1000;
 	private double drawDistance = 0.2;
