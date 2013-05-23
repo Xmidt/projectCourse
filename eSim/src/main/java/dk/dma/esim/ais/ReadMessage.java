@@ -148,25 +148,7 @@ public class ReadMessage extends Thread {
 		        	// Ship length and width not found
 		        	ship.setShipType(0);
 		        }
-		    }
-		    
-		    /**
-		     * Heading Degrees (0-359) (> 359 indicates not available = 0)
-		     */
-		    if (aisMessage instanceof AisPositionMessage) {
-		    	AisPositionMessage positionMessage = (AisPositionMessage)aisMessage;
-		    	try {
-		    		int heading = positionMessage.getTrueHeading();
-		    		if (heading > 359 ) {
-		    			heading = 0;
-		    		}
-		    		ship.setShipHeading(heading);
-		    		
-		    	} catch(NullPointerException e) {
-		    		ship.setShipHeading(0);
-		    	}
-		    }
-		    
+		    }		    
 		}
 		
 		ship.setShipAisMessage(aisMessage);
@@ -184,6 +166,23 @@ public class ReadMessage extends Thread {
 	        	ship.setShipLongitude(0);
 	        }
 		}
+		
+	    /**
+	     * Heading Degrees (0-359) (> 359 indicates not available = 0)
+	     */
+	    if (aisMessage instanceof AisPositionMessage) {
+	    	AisPositionMessage positionMessage = (AisPositionMessage)aisMessage;
+	    	try {
+	    		int heading = positionMessage.getTrueHeading();
+	    		if (heading > 359 ) {
+	    			heading = 0;
+	    		}
+	    		ship.setShipHeading(heading);
+	    		
+	    	} catch(NullPointerException e) {
+	    		ship.setShipHeading(0);
+	    	}
+	    }
 		
 	    // Add/update the HashMap, add to list
 		shipHashMap.put(mmsi, ship);

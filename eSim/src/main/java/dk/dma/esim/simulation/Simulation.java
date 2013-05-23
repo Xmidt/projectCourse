@@ -17,7 +17,7 @@ import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import dk.dma.esim.ais.AisShip;
-import dk.dma.esim.ais.Coordinates;
+import dk.dma.esim.ais.AisShipPosition;
 import dk.dma.esim.ais.ReadMessage;
 import dk.dma.esim.gui.Compass;
 import dk.dma.esim.virtualship.VirtualShip;
@@ -35,7 +35,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     
     private Node aisShipsNode;
     
-    private Coordinates coordinates;
+    private AisShipPosition coordinates;
     private ReadMessage readAisMessage;
     private boolean readingAis = false;
 
@@ -102,7 +102,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             
             aisShipsNode = new Node("Real world ships");
             rootNode.attachChild(aisShipsNode);
-            coordinates = new Coordinates(latitude,longitude);
+            coordinates = new AisShipPosition(latitude,longitude);
 
         } catch (Exception e) {
             e.printStackTrace();

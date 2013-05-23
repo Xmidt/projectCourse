@@ -1,6 +1,6 @@
 package dk.dma.esim.ais;
 
-public class Coordinates {
+public class AisShipPosition {
 
 	/**
 	 * Geographic coordinates where the boat were spawned
@@ -31,7 +31,7 @@ public class Coordinates {
 	 * @param latitude
 	 * @param longitude
 	 */
-	public Coordinates(double latitude, double longitude) {
+	public AisShipPosition(double latitude, double longitude) {
 		this.latitude = latitude;
 		this.longitude = longitude;
 		
