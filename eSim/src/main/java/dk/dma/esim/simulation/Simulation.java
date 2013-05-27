@@ -7,6 +7,8 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Node;
@@ -138,7 +140,11 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             actor.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
             actor.getSpatial().scale(1.5f, 1.5f, 1.5f);
             actor.getSpatial().setLocalTranslation(0.0f, -3.0f, 0.0f);
-            actor.getSpatial().rotate(0.0f, -1.5f, 0.0f);
+            
+            // Make ship pointing in the north direction 
+            Quaternion yAxes = new Quaternion();
+            yAxes.fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y);
+            actor.getSpatial().rotate(yAxes);
             actor.getNode().attachChild(actor.getSpatial());
 
             rootNode.attachChild(actor.getNode());
@@ -258,34 +264,43 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 			/**
 			 * Check if the current draw distance is fulfilled, from the Coordinates class.
 			 */
-			if (coordinates.checkAis(aisShip.getShipLatitude(),	aisShip.getShipLongitude())) {
-				
-				/**
-				 * Checks if the node already exists, if not -> insert the real ship in the virtual world
-				 */
-				if (!aisShipsNode.hasChild(aisShip.getNode())){
+			try {
+				if (coordinates.checkAis(aisShip.getShipLatitude(),	aisShip.getShipLongitude())) {
 					
-					// Ship coordinates for the virtual world
-					float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLongitude());
-					float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLatitude());
+					/**
+					 * Checks if the node already exists, if not -> insert the real ship in the virtual world
+					 */
+					if (!aisShipsNode.hasChild(aisShip.getNode())){
+						
+						// Ship coordinates for the virtual world
+						float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLongitude());
+						float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLatitude());
+						
+						// Model settings
+						aisShip.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
+						aisShip.getSpatial().scale(1.5f, 1.5f, 1.5f);
+						aisShip.getSpatial().setLocalTranslation(aisShipSpatialX, -2.0f, aisShipSpatialZ);
+						
+						// Rotate the ais ship, if information is available
+			            Quaternion yAxes = new Quaternion();
+			            float shipHeadingRadian = (float) Math.toRadians(aisShip.getShipHeading());
+			            yAxes.fromAngleAxis((-1 * (shipHeadingRadian + FastMath.HALF_PI)), Vector3f.UNIT_Y);
+						aisShip.getSpatial().rotate(yAxes);
+						
+						// Add the model settings to the ship node
+						aisShip.getNode().attachChild(aisShip.getSpatial());
+						
+						// Attach the ship node, to the node containing all the real ships in the virtual world
+						aisShipsNode.attachChild(aisShip.getNode());
+						
+					}
+				} else {
 					
-					// Model settings
-					aisShip.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
-					aisShip.getSpatial().scale(1.5f, 1.5f, 1.5f);
-					aisShip.getSpatial().setLocalTranslation(aisShipSpatialX, -2.0f, aisShipSpatialZ);
-					aisShip.getSpatial().rotate(0.0f, -1.5f, 0.0f);
-					
-					// Add the model settings to the ship node
-					aisShip.getNode().attachChild(aisShip.getSpatial());
-					
-					// Attach the ship node, to the node containing all the real ships in the virtual world
-					aisShipsNode.attachChild(aisShip.getNode());
-					
+					// If the ship is out of draw distance, remove it
+					aisShipsNode.detachChild(aisShip.getNode());
 				}
-			} else {
-				
-				// If the ship is out of draw distance, remove it
-				aisShipsNode.detachChild(aisShip.getNode());
+			} catch (NullPointerException e) {
+				// Stream list is not yet ready, to prevent crashes
 			}
 		}
 		
