@@ -100,7 +100,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             buildWorld();
             setupKeys();
             buildBoat();						// Set boat
-            world.getWater().toggleWater();		// Set water
+            //world.getWater().toggleWater();		// Set water
             toggleCamera();						// set brigde view
             
             aisShipsNode = new Node("Real world ships");

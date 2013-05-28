@@ -6,7 +6,7 @@ This is the repository for team Echo.
 
 ## Introduction ##
 
-eSim is a basic (but growing) maritime 3D simulator. The aim is using the AIS transponders on ships in the read world to make a 3D environment populated with virtual copies of mixed with
+eSim is a basic (but growing) maritime 3D simulator. The aim is using the AIS transponders on ships in the read world to make a 3D environment populated with virtual copies of real ships mixed with
 true virtual ships. The 3D graphical engine used is the jMonkeyEngine (http://jmonkeyengine.org)
 
 # eSim #
@@ -24,11 +24,8 @@ This is the Maven project containing the current stage of the simulator. The gra
 
 ### Building ###
 
-Build both e-Navigation and AisLib:
- 
-    mvn install
- 
-This is easier said than done when using Maven. First off start by importing eSim as a Maven project. Then add the AIS Parent and eNav Parent projects (which should be pulled and imported as projects themselves) as dependencies to the new eSim project. It might be necessary to add the packages in the Parents individually. When this is done the dependencies should be resolved.
+Currently the easiest way is using either Eclipse or NetBeans:
+First off start by importing eSim as a Maven project. Then add the AIS Parent and eNav Parent projects (which should be pulled and imported as projects themselves) as dependencies to the new eSim project. It might be necessary to add the packages in the Parents individually. When this is done the dependencies should be resolved.
 
 ### Run ###
 If the application runs correctly a new 1024x768 window should appear, with a blue plane and a skybox.
