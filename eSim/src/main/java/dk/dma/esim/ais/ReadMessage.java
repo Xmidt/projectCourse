@@ -2,9 +2,7 @@ package dk.dma.esim.ais;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+//import java.util.concurrent.CopyOnWriteArrayList;
 
 import dk.dma.ais.message.AisMessage;
 import dk.dma.ais.message.AisPositionMessage;
@@ -14,6 +12,8 @@ import dk.dma.ais.reader.AisStreamReader;
 import dk.dma.ais.reader.AisTcpReader;
 import dk.dma.enav.model.geometry.Position;
 import dk.dma.enav.util.function.Consumer;
+import dk.dma.esim.virtualship.VirtualShip;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ReadMessage extends Thread {
@@ -24,15 +24,15 @@ public class ReadMessage extends Thread {
 	private final String URL = "localhost";
 	private final Integer port = 4001;
 	
-	private CopyOnWriteArrayList<Integer> shipMmsi;
-	private HashMap<Integer,AisShip> shipHashMap;
+	//private CopyOnWriteArrayList<Integer> shipMmsi;
+	private ConcurrentHashMap<Integer,VirtualShip> shipHashMap;
 	
 	/**
 	 * Constructor to initiate List of mmsi, and HashMap<mmsi,AisShip>
 	 */
 	public ReadMessage() {
-		shipMmsi = new CopyOnWriteArrayList <Integer>();
-		shipHashMap = new HashMap<Integer, AisShip>();
+		//shipMmsi = new CopyOnWriteArrayList <Integer>();
+		shipHashMap = new ConcurrentHashMap<Integer, VirtualShip>();
 	}
 	
 	/**
@@ -60,7 +60,7 @@ public class ReadMessage extends Thread {
 	/**
 	 * 
 	 * @return ArrayList of current ship mmsi
-	 */
+	 
 	public ArrayList<Integer> getShipMmsi(){	
 		ArrayList<Integer> tempShipMmsi = new ArrayList<Integer>();
 		
@@ -69,13 +69,13 @@ public class ReadMessage extends Thread {
 		}
 		
 		return tempShipMmsi;
-	}
+	}*/
 	
 	/**
 	 * 
 	 * @return Hashmap with mmsi keys, and values as AisShip class.
 	 */
-	public HashMap<Integer,AisShip> getShipHashMap(){
+	public ConcurrentHashMap<Integer,VirtualShip> getShipHashMap(){
 		return shipHashMap;
 	}
 	
@@ -86,7 +86,7 @@ public class ReadMessage extends Thread {
 	 */
 	private void createShipHashMap(AisMessage aisMessage) {
 		int mmsi = aisMessage.getUserId();
-		AisShip ship = null;
+		VirtualShip ship = null;
 		
 		/**
 		 * Check if ship is already in the list, if not, create a new ship object,
@@ -94,8 +94,10 @@ public class ReadMessage extends Thread {
 		 */
 		if (shipHashMap.containsKey(mmsi)) {
 			ship = shipHashMap.get(mmsi);
+                        
+                        
 		} else {
-			ship = new AisShip();
+			ship = new VirtualShip();
 			ship.setNode(String.valueOf(mmsi));
 			
 			   /**
@@ -158,6 +160,7 @@ public class ReadMessage extends Thread {
 			AisPositionMessage posMessage = (AisPositionMessage)aisMessage;
 			Position position = posMessage.getPos().getGeoLocation();
 	        try {
+                        //System.out.println(posMessage.toString());
 	        	ship.setShipLatitude(position.getLatitude());
 	        	ship.setShipLongitude(position.getLongitude());
 	        } catch(NullPointerException e) {
@@ -174,7 +177,7 @@ public class ReadMessage extends Thread {
 	    	AisPositionMessage positionMessage = (AisPositionMessage)aisMessage;
 	    	try {
 	    		int heading = positionMessage.getTrueHeading();
-	    		if (heading > 359 ) {
+	    		if (heading > 3599 ) {
 	    			heading = 0;
 	    		}
 	    		ship.setShipHeading(heading);
@@ -183,10 +186,27 @@ public class ReadMessage extends Thread {
 	    		ship.setShipHeading(0);
 	    	}
 	    }
-		
+            
+            
+            /**
+             * Speed
+             */
+            if (aisMessage instanceof AisPositionMessage) {
+	    	AisPositionMessage positionMessage = (AisPositionMessage)aisMessage;
+	    	try {
+                        int speedOverGround = positionMessage.getSog();
+	    		
+	    		ship.setForwardSpeed(Math.ceil((double)speedOverGround/100.0));
+	    		
+	    	} catch(NullPointerException e) {
+	    		ship.setForwardSpeed(0);
+	    	}
+	    }
+            
 	    // Add/update the HashMap, add to list
 		shipHashMap.put(mmsi, ship);
-		if (!shipMmsi.contains(mmsi)) shipMmsi.add(mmsi);
+                
+		//if (!shipMmsi.contains(mmsi)) shipMmsi.add(mmsi);
 	}
 	
 	/**

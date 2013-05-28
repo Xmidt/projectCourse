@@ -1,7 +1,7 @@
 package dk.dma.esim.simulation;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
@@ -18,7 +18,6 @@ import com.jme3.system.AppSettings;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
-import dk.dma.esim.ais.AisShip;
 import dk.dma.esim.ais.AisShipPosition;
 import dk.dma.esim.ais.ReadMessage;
 import dk.dma.esim.gui.Compass;
@@ -34,9 +33,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     private CameraNode camNode;
     private VirtualShip actor = null;
     private Compass compass;
-    
-    private Node aisShipsNode;
-    
+    //private Node aisShipsNode;
     private AisShipPosition coordinates;
     private ReadMessage readAisMessage;
     private boolean readingAis = false;
@@ -52,14 +49,12 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     }
 
     /**
-     * This is the main class for JME
-     * Defines all the settings for the engine.
-     * 
+     * This is the main class for JME Defines all the settings for the engine.
+     *
      * Furthermore creates rootnode and guinode's
-     * 
+     *
      * Also handle the key listing and camera controls
      */
-    
     /**
      * Main method of JME, which initiate the 3D rendered world.
      */
@@ -102,31 +97,31 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             //world.getWater().toggleWater();		// Set water
             toggleCamera();						// set brigde view
 
-            
-            aisShipsNode = new Node("Real world ships");
-            rootNode.attachChild(aisShipsNode);
-            coordinates = new AisShipPosition(latitude,longitude);
+
+            //aisShipsNode = new Node("Real world ships");
+            //rootNode.attachChild(aisShipsNode);
+            coordinates = new AisShipPosition(latitude, longitude);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     /*
      * Initializes the virtual World, and add a compass to the guiNode 
      */
     public void buildWorld() {
         try {
-            
-            world = new VirtualWorld(rootNode,assetManager,viewPort); 
-            
+
+            world = new VirtualWorld(rootNode, assetManager, viewPort);
+
             compass = new Compass(assetManager, guiNode, settings.getHeight(), settings.getWidth());
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     /*
      * Draws the boat in the virtual world:
      * This could probably be handles a little nicer. Possibly make some methods in
@@ -141,7 +136,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             actor.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
             actor.getSpatial().scale(1.5f, 1.5f, 1.5f);
             actor.getSpatial().setLocalTranslation(0.0f, -3.0f, 0.0f);
-            
+
             // Make ship pointing in the north direction 
             Quaternion yAxes = new Quaternion();
             yAxes.fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y);
@@ -200,20 +195,19 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
     /**
      * JME updates itself depending on the current frame rate.
-     * 
-     * This method is used to update the surrounding of the world.
-     * 	The compass gui.
-     * 	Real world ships obtained from AisMessages
+     *
+     * This method is used to update the surrounding of the world. The compass
+     * gui. Real world ships obtained from AisMessages
      */
     @Override
     public void simpleUpdate(float tpf) {
-    	
-    	//  Insert or remove ships from ais message information
-    	if (!readingAis) {
-    		drawAisShip();
-    	}
-    	
-    	// Compass needle rotation
+
+        //  Insert or remove ships from ais message information
+        if (!readingAis) {
+            drawAisShip();
+        }
+
+        // Compass needle rotation
         try {
 
             if (actor != null && actor.isValid()) {
@@ -221,101 +215,106 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
                 compass.rotate(actor.getNode().getLocalRotation());
             }
 
+            for(VirtualShip i : readAisMessage.getShipHashMap().values()){
+                i.updateSimple();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     /**
      * Insert or remove real world ship, obtained from AisMessages
      */
     private void drawAisShip() {
-    	
-    	readingAis = true;
-    	
-    	// Virtual ship is always initiated in the origin of JME
-    	float xCoordinate = 0f;
-    	float zCoordinate = 0f;
-    	
-    	/**
-    	 * ArrayList containing all the keys values of the HashMap
-    	 * 
-    	 * HashMap key values is the mmsi (a ships unique ID), with value Class AisShip 
-    	 */
-    	ArrayList<Integer> shipMMSI = readAisMessage.getShipMmsi();
-		HashMap<Integer,AisShip> ship = readAisMessage.getShipHashMap();
-		
-		try {
-			xCoordinate = actor.getNode().getLocalTranslation().x;
-			zCoordinate = actor.getNode().getLocalTranslation().z;
-			
-		} catch (NullPointerException e) {
-			// Boat not found
-		}
-		
-		coordinates.newCurrentCoordinates(xCoordinate, zCoordinate);
-		
-		/**
-		 * Loops over all the mmsi (ship unique id) currently in the ArrayList
-		 */
-		for (Integer mmsi : shipMMSI) {
-			
-			AisShip aisShip = ship.get(mmsi);
-			
-			/**
-			 * Check if the current draw distance is fulfilled, from the Coordinates class.
-			 */
-			try {
-				if (coordinates.checkAis(aisShip.getShipLatitude(),	aisShip.getShipLongitude())) {
-					
-					/**
-					 * Checks if the node already exists, if not -> insert the real ship in the virtual world
-					 */
-					if (!aisShipsNode.hasChild(aisShip.getNode())){
-						
-						// Ship coordinates for the virtual world
-						float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLongitude());
-						float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLatitude());
-						
-						// Model settings
-						aisShip.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
-						aisShip.getSpatial().scale(1.5f, 1.5f, 1.5f);
-						aisShip.getSpatial().setLocalTranslation(aisShipSpatialX, -2.0f, aisShipSpatialZ);
-						
-						// Rotate the ais ship, if information is available
-			            Quaternion yAxes = new Quaternion();
-			            float shipHeadingRadian = (float) Math.toRadians(aisShip.getShipHeading());
-			            yAxes.fromAngleAxis((-1 * (shipHeadingRadian + FastMath.HALF_PI)), Vector3f.UNIT_Y);
-						aisShip.getSpatial().rotate(yAxes);
-						
-						// Add the model settings to the ship node
-						aisShip.getNode().attachChild(aisShip.getSpatial());
-						
-						// Attach the ship node, to the node containing all the real ships in the virtual world
-						aisShipsNode.attachChild(aisShip.getNode());
-						
-					}
-				} else {
-					
-					// If the ship is out of draw distance, remove it
-					aisShipsNode.detachChild(aisShip.getNode());
-				}
-			} catch (NullPointerException e) {
-				// Stream list is not yet ready, to prevent crashes
-			}
-		}
-		
-    	// To prevent multiple threads, tell the system it is done with the method.
-    	readingAis = false;
+
+        readingAis = true;
+
+        // Virtual ship is always initiated in the origin of JME
+        float xCoordinate = 0f;
+        float zCoordinate = 0f;
+
+        /**
+         * ArrayList containing all the keys values of the HashMap
+         *
+         * HashMap key values is the mmsi (a ships unique ID), with value Class
+         * AisShip
+         */
+        //ArrayList<Integer> shipMMSI = readAisMessage.getShipMmsi();
+        ConcurrentHashMap<Integer, VirtualShip> hashMap = readAisMessage.getShipHashMap();
+
+        try {
+            xCoordinate = actor.getNode().getLocalTranslation().x;
+            zCoordinate = actor.getNode().getLocalTranslation().z;
+
+        } catch (NullPointerException e) {
+            // Boat not found
+        }
+
+        coordinates.newCurrentCoordinates(xCoordinate, zCoordinate);
+
+        /**
+         * Loops over all the mmsi (ship unique id) currently in the ArrayList
+         */
+        for (Integer mmsi : hashMap.keySet()){//sshipMMSI) {
+
+            VirtualShip aisShip = hashMap.get(mmsi);
+
+            /**
+             * Check if the current draw distance is fulfilled, from the
+             * Coordinates class.
+             */
+            try {
+                if (coordinates.checkAis(aisShip.getShipLatitude(), aisShip.getShipLongitude())) {
+
+                    /**
+                     * Checks if the node already exists, if not -> insert the
+                     * real ship in the virtual world
+                     */
+                    if (!rootNode.hasChild(aisShip.getNode())) {
+                        
+                        // Ship coordinates for the virtual world
+                        float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLongitude());
+                        float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLatitude());
+
+                        // Model settings
+                        aisShip.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
+                        aisShip.getSpatial().scale(1.5f, 1.5f, 1.5f);
+                        aisShip.getSpatial().setLocalTranslation(aisShipSpatialX, -2.0f, aisShipSpatialZ);
+
+                        // Rotate the ais ship, if information is available
+                        Quaternion yAxes = new Quaternion();
+                        float shipHeadingRadian = (float) Math.toRadians(aisShip.getShipHeading()/10);
+                        //aisShip.getSpatial().rotate(0, aisShip.getShipHeading()/10 , 0);
+                        yAxes.fromAngleAxis((-1 * (shipHeadingRadian + FastMath.HALF_PI)), Vector3f.UNIT_Y);
+                        aisShip.getSpatial().rotate(yAxes);
+
+                        // Add the model settings to the ship node
+                        aisShip.getNode().attachChild(aisShip.getSpatial());
+
+                        // Attach the ship node, to the node containing all the real ships in the virtual world
+                        rootNode.attachChild(aisShip.getNode());
+
+                    }
+                } else {
+
+                    // If the ship is out of draw distance, remove it
+                    rootNode.detachChild(aisShip.getNode());
+                }
+            } catch (NullPointerException e) {
+                // Stream list is not yet ready, to prevent crashes
+            }
+        }
+
+        // To prevent multiple threads, tell the system it is done with the method.
+        readingAis = false;
     }
 
     /**
-     * Prints the user control ships info, with the 3D world variables.
-     * 	position
-     * 	rotation
-     *  speed
-     *  rudder angle
-     * 
+     * Prints the user control ships info, with the 3D world variables. position
+     * rotation speed rudder angle
+     *
      * Hotkey: I
      */
     private void printShipInfo() {
@@ -359,28 +358,28 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
      */
     public void onAction(String binding, boolean value, float tpf) {
         if (value) {
-        	
-        	// Ship turning
+
+            // Ship turning
             if (binding.equals("Lefts")) {
 
                 actor.incrementRudder();
 
-            // Ship turning
+                // Ship turning
             } else if (binding.equals("Rights")) {
 
                 actor.decrementRudder();
 
-            // ship speed increment
+                // ship speed increment
             } else if (binding.equals("Ups")) {
 
                 actor.setForwardSpeed(actor.getForwardSpeed() + 1); //make proper method
 
-            // ship speed decrement
+                // ship speed decrement
             } else if (binding.equals("Downs")) {
 
                 actor.setForwardSpeed(actor.getForwardSpeed() - 1);
 
-            // draw the user controlled boat
+                // draw the user controlled boat
             } else if (binding.equals("Space")) {
 
                 if (actor == null) {
@@ -388,22 +387,22 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
                     buildBoat();
                 }
 
-            // toggle between real rendered water, or blue square representing water
+                // toggle between real rendered water, or blue square representing water
             } else if (binding.equals("ToggleWater")) {
-            	
+
                 System.out.println("Water " + world.getWater().toggleWater());
-                
-            // fix camera to boat, or free view and controlled camera
+
+                // fix camera to boat, or free view and controlled camera
             } else if (binding.equals("ToggleCamera")) {
-            	
+
                 toggleCamera();
-                
-            // user controlled ship variables from 3D world system print
+
+                // user controlled ship variables from 3D world system print
             } else if (binding.equals("InfoDump")) {
-            	
+
                 printShipInfo();
-                
-            // TODO properly not needed in the future, delete later on
+
+                // TODO properly not needed in the future, delete later on
             } else if (binding.equals("InfoDumpAisMessage")) {
                 //aisMessageHandler();
             }

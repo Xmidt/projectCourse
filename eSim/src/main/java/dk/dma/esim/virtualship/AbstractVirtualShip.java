@@ -29,6 +29,10 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
     protected Material material;
     protected double forwardSpeed;
     protected boolean valid;
+    
+    protected Integer shipHeading;
+    protected Integer shipType;
+    protected String shipName;
 
     public AbstractVirtualShip() {
         this.node = new Node();
@@ -208,5 +212,42 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
     
     public boolean isValid(){
         return this.valid;
+    }
+    
+    public void setNode(String mmsi) {
+        this.mmsi = Integer.parseInt(mmsi);
+        this.node = new Node(mmsi);
+    }
+
+    public void setName(String name) {
+        this.shipName = name;
+    }
+
+    public void setShipHeading(Integer heading) {
+        this.shipHeading = heading;
+    }
+
+    public void setShipType(Integer type) {
+        this.shipType = type;
+    }
+
+    public String getName() {
+        return this.shipName;
+    }
+
+    public Integer getShipHeading() {
+        return this.shipHeading;
+    }
+
+    public Integer getShipType() {
+        return this.shipType;
+    }
+
+    public void updateSimple() {
+        Vector3f v = this.node.getLocalTranslation();
+        Vector3f o = this.node.getLocalRotation().getRotationColumn(2);
+
+        //this.node.rotate(0f, (float) this.rudderAngle * 0.001f * (float) this.forwardSpeed, 0.0f);
+        this.node.setLocalTranslation(v.add(o.mult(0.1f * (float) this.forwardSpeed)));
     }
 }

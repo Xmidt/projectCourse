@@ -1,6 +1,7 @@
 package dk.dma.esim.virtualship;
 
 import com.jme3.material.Material;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
@@ -285,4 +286,54 @@ public interface IVirtualShip {
      * @return true if ship is shown in the 3D rendered world
      */
     public boolean isValid();
+    
+    
+    /**
+     * Sets the jMonkey Node with the provided name
+     * @param mmsi 
+     */
+    public void setNode(String mmsi);
+
+    /**
+     * Sets the name of the ship.
+     * @param name 
+     */
+    public void setName(String name);
+
+    /**
+     * Sets the heading of the ship, this is the way the ship is pointed.
+     * @param heading 
+     */
+    public void setShipHeading(Integer heading);
+
+    /**
+     * Sets ship type.
+     * @param type 
+     */
+    public void setShipType(Integer type);
+
+    /**
+     * Returns the name of the ship.
+     * @return 
+     */
+    public String getName();
+
+    /**
+     * Returns the ship heading.
+     * @return 
+     */
+    public Integer getShipHeading();
+
+    /**
+     * Returns the ship type.
+     * @return 
+     */
+    public Integer getShipType();
+
+    /**
+     * Updates the position of the ship. This method should not include any turning
+     * of the ship, and should rather just naively update the position from the heading
+     * and the speed. As if the ship moves in a perfect line.
+     */
+    public void updateSimple();
 }
