@@ -3,9 +3,8 @@ package dk.dma.esim.virtualship;
 import com.jme3.material.Material;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+
 import dk.dma.ais.message.AisMessage;
-import dk.dma.enav.model.geometry.Position;
-import dk.dma.enav.model.ship.ShipType;
 
 public interface IVirtualShip {
 

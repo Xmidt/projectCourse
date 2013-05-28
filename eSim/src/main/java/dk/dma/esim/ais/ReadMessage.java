@@ -88,17 +88,72 @@ public class ReadMessage extends Thread {
 		int mmsi = aisMessage.getUserId();
 		AisShip ship = null;
 		
-		// Check if ship is already in the list, if not, creat a new ship object
+		/**
+		 * Check if ship is already in the list, if not, create a new ship object,
+		 * and fill out the various variables if possible.
+		 */
 		if (shipHashMap.containsKey(mmsi)) {
 			ship = shipHashMap.get(mmsi);
 		} else {
 			ship = new AisShip();
-			ship.setShipAisMessage(aisMessage);
 			ship.setNode(String.valueOf(mmsi));
-//			ship.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
+			
+			   /**
+		     * GPS Ant. Distance from stern (B) Reference point for reported position. Also indicates the dimension of ship (m)
+		     * (see Fig. 42 and § 3.3.3)
+		     * 
+		     * GPS Ant. Distance from starboard (D): Reference point for reported position. Also indicates the dimension of ship
+		     * (m) (see Fig. 42 and § 3.3.3)
+		     */
+		    if (aisMessage instanceof AisStaticCommon) {
+		        AisStaticCommon staticMessage = (AisStaticCommon)aisMessage;
+		        try {
+		        	ship.setLength(staticMessage.getDimStern());
+		        	ship.setWidth(staticMessage.getDimStarboard());
+		        	
+		        } catch(NullPointerException e) {
+		        	// Ship length and width not found
+		        	ship.setLength(0);
+		        	ship.setWidth(0);
+		        }
+		    }
+		    
+		    /**
+		     * Ship name: Maximum 20 characters 6 bit ASCII, as defined in Table 44
+		     * 
+		     * @@@@@@@@@@@@@@@@@@@@ = not available = default. For SAR aircraft, it should be set to "SAR AIRCRAFT NNNNNNN"
+		     *                      where NNNNNNN equals the aircraft registration number
+		     */
+		    if (aisMessage instanceof AisStaticCommon) {
+		        AisStaticCommon staticMessage = (AisStaticCommon)aisMessage;
+		        try {
+		        	ship.setName(staticMessage.getName());
+		        	
+		        } catch(NullPointerException e) {
+		        	// Ship name not found
+		        	ship.setName("");
+		        }
+		    }
+		    
+		    /**
+		     * Type of ship and cargo type: 0 = not available or no ship = default 1-99 = as defined in � 3.3.2 100-199 =
+		     * reserved, for regional use 200-255 = reserved, for future use Not applicable to SAR aircraft
+		     */
+		    if (aisMessage instanceof AisStaticCommon) {
+		        AisStaticCommon staticMessage = (AisStaticCommon)aisMessage;
+		        try {
+		        	ship.setShipType(staticMessage.getShipType());
+		        	
+		        } catch(NullPointerException e) {
+		        	// Ship length and width not found
+		        	ship.setShipType(0);
+		        }
+		    }		    
 		}
 		
-		// Obtain ship geographical latitude and logitude, if possible
+		ship.setShipAisMessage(aisMessage);
+		
+		// Obtain ship geographical latitude and longitude, if possible
 		if (aisMessage instanceof AisPositionMessage) {
 			AisPositionMessage posMessage = (AisPositionMessage)aisMessage;
 			Position position = posMessage.getPos().getGeoLocation();
@@ -107,24 +162,28 @@ public class ReadMessage extends Thread {
 	        	ship.setShipLongitude(position.getLongitude());
 	        } catch(NullPointerException e) {
 	        	// Ship latitude and longitude not found
+	        	ship.setShipLatitude(0);
+	        	ship.setShipLongitude(0);
 	        }
 		}
 		
-		// Obtain ship length and width, if possible
-	    if (aisMessage instanceof AisStaticCommon) {
-	        AisStaticCommon staticMessage = (AisStaticCommon)aisMessage;
-	        try {
-	        	ship.setLength(staticMessage.getDimStern());
-	        	ship.setWidth(staticMessage.getDimStarboard());
-	        	
-	        } catch(NullPointerException e) {
-	        	// Ship length and width not found
-	        	ship.setLength(0);
-	        	ship.setWidth(0);
-	        }
-
+	    /**
+	     * Heading Degrees (0-359) (> 359 indicates not available = 0)
+	     */
+	    if (aisMessage instanceof AisPositionMessage) {
+	    	AisPositionMessage positionMessage = (AisPositionMessage)aisMessage;
+	    	try {
+	    		int heading = positionMessage.getTrueHeading();
+	    		if (heading > 359 ) {
+	    			heading = 0;
+	    		}
+	    		ship.setShipHeading(heading);
+	    		
+	    	} catch(NullPointerException e) {
+	    		ship.setShipHeading(0);
+	    	}
 	    }
-	    
+		
 	    // Add/update the HashMap, add to list
 		shipHashMap.put(mmsi, ship);
 		if (!shipMmsi.contains(mmsi)) shipMmsi.add(mmsi);

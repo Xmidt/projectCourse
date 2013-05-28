@@ -1,23 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package dk.dma.esim.virtualship;
 
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+
 import dk.dma.ais.message.AisMessage;
-import dk.dma.enav.model.geometry.Position;
-import dk.dma.enav.model.ship.ShipType;
 
 public abstract class AbstractVirtualShip implements IVirtualShip {
 
-    //protected Position position;
     protected int length;
     protected int width;
-    //protected ShipType type;
     protected int mass;
     protected int speed;
     protected int cog;
@@ -39,10 +32,8 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
 
     public AbstractVirtualShip() {
         this.node = new Node();
-        //this.position = Position.create(0.0, 0.0);
         this.length = 0;
         this.width = 0;
-        //this.type = ShipType.UNDEFINED;
         this.mass = 0;
         this.speed = 0;
         this.cog = 0;
@@ -51,14 +42,6 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
         this.rudderTurnRate = 1;
         this.valid = false;
     }
-
-//    public Position getPos() {
-//        return this.position;
-//    }
-//
-//    public void setPos(Position pos) {
-//        this.position = pos;
-//    }
 
     public void setSpeed(int speed) {
         this.speed = speed;
@@ -75,10 +58,6 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
     public void setWidth(int width) {
         this.width = width;
     }
-
-//    public void setType(ShipType type) {
-//        this.type = type;
-//    }
 
     public void setMass(int mass) {
         this.mass = mass;
@@ -152,10 +131,6 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
     public int getWidth() {
         return this.width;
     }
-
-//    public ShipType getType() {
-//        return this.type;
-//    }
 
     public int getMass() {
         return this.mass;

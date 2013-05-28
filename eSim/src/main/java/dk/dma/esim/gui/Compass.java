@@ -12,7 +12,6 @@ import com.jme3.ui.Picture;
 public class Compass {
 
     private Node compassNode;
-    private Node guiNode;
 
     /**
      * Creates a compass with needle, in JME gui interface
@@ -20,12 +19,11 @@ public class Compass {
      * @param assetManager	Default library of JME models, textures and etc. etc.
      * @param guiNode		guiNode interface in JME
      * @param windowHeight	Height of the JME window
-     * @param windowWidth	Width of the JME iwndow
+     * @param windowWidth	Width of the JME window
      */
     public Compass(AssetManager assetManager, Node guiNode, int windowHeight, int windowWidth) {
 
     	// Compass background
-        this.guiNode = guiNode;
         Picture pic = new Picture("Compass HUD");
         pic.setImage(assetManager, "Interface/compassWithBackground.png", true);
         pic.setWidth(windowHeight / 4);
