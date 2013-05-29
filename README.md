@@ -20,17 +20,17 @@ true virtual ships. The 3D graphical engine used is the jMonkeyEngine (http://jm
 
 ### Description ###
 
-This is the Maven project containing the current stage of the simulator. The graphical engine is contained in a local Maven repository.
+This is the Maven project containing the current stage of the simulator. The graphical engine is contained in a local Maven repository as the jMonkeyEngine does not at this time provide an external Maven repository.
 
 ### Building ###
 
-Currently the easiest way is using either Eclipse or NetBeans:
+Currently the easiest way to build is using either Eclipse or NetBeans:
 First off start by importing eSim as a Maven project. Then add the AIS Parent and eNav Parent projects (which should be pulled and imported as projects themselves) as dependencies to the new eSim project. It might be necessary to add the packages in the Parents individually. When this is done the dependencies should be resolved.
 
 ### Run ###
-If the application runs correctly a new 1024x768 window should appear, with a blue plane and a skybox.
-Pressing Space should spawn a ship, and Enter will spawn a few objects in the world around the ship.
-The X key toggled between follow camera on the ship, and freecam. Preesing V will toggle the FilterPostProcessor which turns the blue surface into pretty water.
+If the application runs correctly a new window should appear, with a blue plane and a skybox.
+The world may be populated by other ships depending on the location of the virtual ship in the virtual world and if any AIS data is available. 
+The X key toggles between follow camera on the ship, and freecam. Pressing V will toggle the FilterPostProcessor which turns the blue surface into pretty water.
 Depending on the running system, this water may cause the application to crash or result in a black screen. Pressing V again should restore the blue surface. 
 
 Controlling the ship can be done with U,J,K,H (pressing these multipile times is needed).
