@@ -328,11 +328,4 @@ public interface IVirtualShip {
      * @return 
      */
     public Integer getShipType();
-
-    /**
-     * Updates the position of the ship. This method should not include any turning
-     * of the ship, and should rather just naively update the position from the heading
-     * and the speed. As if the ship moves in a perfect line.
-     */
-    public void updateSimple();
 }

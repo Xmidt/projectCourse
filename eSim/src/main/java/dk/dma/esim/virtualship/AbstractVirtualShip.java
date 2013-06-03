@@ -200,9 +200,6 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
         return this.node;
     }
     
-    /**
-     * Virtual ship
-     */
     public void update() {
 
         Vector3f v = this.node.getLocalTranslation();
@@ -212,10 +209,6 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
         this.node.setLocalTranslation(v.add(o.mult(0.1f * (float)this.forwardSpeed)));
 
     }
-    
-    /**
-     * Below is used for ais ships
-     */
     
     public boolean isValid(){
         return this.valid;
@@ -248,15 +241,5 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
 
     public Integer getShipType() {
         return this.shipType;
-    }
-
-    /**
-     * Used for the virutal ais ships
-     */
-    public void updateSimple() {
-        Vector3f v = this.node.getLocalTranslation();
-        Vector3f o = this.node.getLocalRotation().getRotationColumn(2);
-
-        this.node.setLocalTranslation(v.add(o.mult(0.1f * (float) this.forwardSpeed)));
     }
 }

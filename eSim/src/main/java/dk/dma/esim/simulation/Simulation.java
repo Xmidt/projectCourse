@@ -197,7 +197,7 @@ public class Simulation extends SimpleApplication implements ActionListener {
             try {
             	drawAisShip();
 	        } catch (NullPointerException e) {
-	            // Stream list is not yet ready, to prevent crashes
+	            // Stream list is not yet ready
 	        }
         }
 
@@ -211,8 +211,11 @@ public class Simulation extends SimpleApplication implements ActionListener {
                 compass.rotate(actor.getNode().getLocalRotation());
             }
 
-            for(VirtualShip i : readAisMessage.getShipHashMap().values()){
-                i.updateSimple();
+            for(VirtualShip virtualAisShip : readAisMessage.getShipHashMap().values()){
+                virtualAisShip.update();
+                
+                virtualAisShip.getNode().getLocalTranslation();
+                
             }
 
         } catch (Exception e) {
