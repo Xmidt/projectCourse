@@ -1,6 +1,7 @@
 package dk.dma.esim.virtualship;
 
 import com.jme3.material.Material;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -29,6 +30,7 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
     protected Material material;
     protected double forwardSpeed;
     protected boolean valid;
+    //protected double rot;
     
     protected Integer shipHeading;
     protected Integer shipType;
@@ -36,7 +38,7 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
 
     public AbstractVirtualShip() {
         this.node = new Node();
-        this.length = 0;
+        this.length = 30;
         this.width = 0;
         this.mass = 0;
         this.speed = 0;
@@ -202,17 +204,45 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
     
     public void update() {
 
-        Vector3f v = this.node.getLocalTranslation();
-        Vector3f o = this.node.getLocalRotation().getRotationColumn(2);
-
-        this.node.rotate(0f, (float)this.rudderAngle * 0.001f * (float)this.forwardSpeed, 0.0f);
-        this.node.setLocalTranslation(v.add(o.mult(0.1f * (float)this.forwardSpeed)));
-
+//        Vector3f v = this.node.getLocalTranslation();
+//        Vector3f o = this.node.getLocalRotation().getRotationColumn(2);
+//
+        
+        //this.node.rotate(0f, (float)this.rudderAngle * 0.001f * (float)this.forwardSpeed, 0.0f);
+        Quaternion q = new Quaternion();
+        this.node.rotate(q);
+//        this.node.setLocalTranslation(v.add(o.mult(0.1f * (float)this.forwardSpeed)));
+        
     }
     
     public boolean isValid(){
         return this.valid;
     }
+    
+    public double getRot(double t){
+        
+        double rot = 0.0;
+        if(this.rudderAngle > 35.0) this.rudderAngle = 35.0;
+        
+        double t1 = this.length/this.forwardSpeed;
+        double rotFinal = (1.2/t1)*this.rudderAngle;
+        
+        if(rotFinal>3.0) rotFinal = 3.0;
+            
+        if(t<t1){
+           rot = t*rotFinal/t1;
+        } else {
+           rot = rotFinal;
+        }
+        
+        System.out.println("Rate of Turn: " + rot);
+        
+        return rot > 3.0 ? 3.0 : rot;
+    }
+    
+//    public void setRot(double rot){
+//        this.rot = rot;
+//    }
     
     public void setNode(String mmsi) {
         this.mmsi = Integer.parseInt(mmsi);
