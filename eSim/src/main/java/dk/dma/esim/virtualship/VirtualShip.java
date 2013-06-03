@@ -5,5 +5,4 @@ public class VirtualShip extends AbstractVirtualShip {
     public VirtualShip(){
         super();
     }
-    
 }
