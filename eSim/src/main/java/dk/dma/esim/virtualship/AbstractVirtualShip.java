@@ -39,7 +39,7 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
     public AbstractVirtualShip() {
         this.node = new Node();
         this.length = 30;
-        this.width = 0;
+        this.width = 10;
         this.mass = 0;
         this.speed = 0;
         this.cog = 0;
