@@ -1,6 +1,5 @@
 package dk.dma.esim.simulation;
 
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.jme3.app.SimpleApplication;
@@ -11,20 +10,16 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.CameraNode;
-import com.jme3.scene.Node;
 import com.jme3.scene.control.CameraControl;
 import com.jme3.system.AppSettings;
 
-import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.screen.Screen;
-import de.lessvoid.nifty.screen.ScreenController;
 import dk.dma.esim.ais.AisShipPosition;
 import dk.dma.esim.ais.ReadMessage;
 import dk.dma.esim.gui.Compass;
 import dk.dma.esim.virtualship.VirtualShip;
 import dk.dma.esim.virtualworld.VirtualWorld;
 
-public class Simulation extends SimpleApplication implements ActionListener, ScreenController {
+public class Simulation extends SimpleApplication implements ActionListener {
 
     private float latitude;
     private float longitude;
@@ -33,7 +28,6 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     private CameraNode camNode;
     private VirtualShip actor = null;
     private Compass compass;
-    //private Node aisShipsNode;
     private AisShipPosition coordinates;
     private ReadMessage readAisMessage;
     private boolean readingAis = false;
@@ -94,12 +88,8 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             buildWorld();
             setupKeys();
             buildBoat();						// Set boat
-            //world.getWater().toggleWater();		// Set water
             toggleCamera();						// set brigde view
 
-
-            //aisShipsNode = new Node("Real world ships");
-            //rootNode.attachChild(aisShipsNode);
             coordinates = new AisShipPosition(latitude, longitude);
 
         } catch (Exception e) {
@@ -204,13 +194,19 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
         //  Insert or remove ships from ais message information
         if (!readingAis) {
-            drawAisShip();
+            try {
+            	drawAisShip();
+	        } catch (NullPointerException e) {
+	            // Stream list is not yet ready, to prevent crashes
+	        }
         }
 
-        // Compass needle rotation
+        /**
+         * Updates the virtual ship, and along the compass needle
+         */
         try {
 
-            if (actor != null && actor.isValid()) {
+            if (actor != null && actor.isValid()) {	
                 actor.update();
                 compass.rotate(actor.getNode().getLocalRotation());
             }
@@ -236,12 +232,9 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         float zCoordinate = 0f;
 
         /**
-         * ArrayList containing all the keys values of the HashMap
-         *
          * HashMap key values is the mmsi (a ships unique ID), with value Class
          * AisShip
          */
-        //ArrayList<Integer> shipMMSI = readAisMessage.getShipMmsi();
         ConcurrentHashMap<Integer, VirtualShip> hashMap = readAisMessage.getShipHashMap();
 
         try {
@@ -249,7 +242,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             zCoordinate = actor.getNode().getLocalTranslation().z;
 
         } catch (NullPointerException e) {
-            // Boat not found
+            // Virtual boat not found
         }
 
         coordinates.newCurrentCoordinates(xCoordinate, zCoordinate);
@@ -265,49 +258,45 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
              * Check if the current draw distance is fulfilled, from the
              * Coordinates class.
              */
-            try {
-                if (coordinates.checkAis(aisShip.getShipLatitude(), aisShip.getShipLongitude())) {
+            if (coordinates.checkAis(aisShip.getShipLatitude(), aisShip.getShipLongitude())) {
 
-                    /**
-                     * Checks if the node already exists, if not -> insert the
-                     * real ship in the virtual world
-                     */
-                    if (!rootNode.hasChild(aisShip.getNode())) {
-                        
-                        // Ship coordinates for the virtual world
-                        float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLongitude());
-                        float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLatitude());
+                /**
+                 * Checks if the node already exists, if not -> insert the
+                 * real ship in the virtual world
+                 */
+                if (!rootNode.hasChild(aisShip.getNode())) {
+                    
+                    // Ship coordinates for the virtual world
+                    float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLongitude());
+                    float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLatitude());
 
-                        // Model settings
-                        aisShip.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
-                        aisShip.getSpatial().scale(1.5f, 1.5f, 1.5f);
-                        aisShip.getSpatial().setLocalTranslation(aisShipSpatialX, -2.0f, aisShipSpatialZ);
+                    // Model settings
+                    aisShip.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
+                    aisShip.getSpatial().scale(1.5f, 1.5f, 1.5f);
+                    aisShip.getSpatial().setLocalTranslation(aisShipSpatialX, -2.0f, aisShipSpatialZ);
 
-                        // Rotate the ais ship, if information is available
-                        Quaternion yAxes = new Quaternion();
-                        float shipHeadingRadian = (float) Math.toRadians(aisShip.getShipHeading()/10);
-                        //aisShip.getSpatial().rotate(0, aisShip.getShipHeading()/10 , 0);
-                        yAxes.fromAngleAxis((-1 * (shipHeadingRadian + FastMath.HALF_PI)), Vector3f.UNIT_Y);
-                        aisShip.getSpatial().rotate(yAxes);
+                    // Rotate the ais ship, if information is available
+                    Quaternion yAxes = new Quaternion();
+                    float shipHeadingRadian = (float) Math.toRadians(aisShip.getShipHeading()/10);
+                    yAxes.fromAngleAxis((-1 * (shipHeadingRadian + FastMath.HALF_PI)), Vector3f.UNIT_Y);
+                    aisShip.getSpatial().rotate(yAxes);
+                    aisShip.getNode().setLocalRotation(yAxes);
 
-                        // Add the model settings to the ship node
-                        aisShip.getNode().attachChild(aisShip.getSpatial());
+                    // Add the model settings to the ship node
+                    aisShip.getNode().attachChild(aisShip.getSpatial());
 
-                        // Attach the ship node, to the node containing all the real ships in the virtual world
-                        rootNode.attachChild(aisShip.getNode());
+                    // Attach the ship node, to the node containing all the real ships in the virtual world
+                    rootNode.attachChild(aisShip.getNode());
 
-                    }
-                } else {
-
-                    // If the ship is out of draw distance, remove it
-                    rootNode.detachChild(aisShip.getNode());
                 }
-            } catch (NullPointerException e) {
-                // Stream list is not yet ready, to prevent crashes
+            } else {
+
+                // If the ship is out of draw distance, remove it
+                rootNode.detachChild(aisShip.getNode());
             }
         }
 
-        // To prevent multiple threads, tell the system it is done with the method.
+        // To prevent multiple threads, flag the system it is done with the method.
         readingAis = false;
     }
 
@@ -409,15 +398,5 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         }
     }
 
-    public void bind(Nifty nifty, Screen screen) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
-    public void onStartScreen() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void onEndScreen() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }

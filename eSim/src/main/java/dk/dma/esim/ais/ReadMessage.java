@@ -24,14 +24,12 @@ public class ReadMessage extends Thread {
 	private final String URL = "localhost";
 	private final Integer port = 4001;
 	
-	//private CopyOnWriteArrayList<Integer> shipMmsi;
 	private ConcurrentHashMap<Integer,VirtualShip> shipHashMap;
 	
 	/**
 	 * Constructor to initiate List of mmsi, and HashMap<mmsi,AisShip>
 	 */
 	public ReadMessage() {
-		//shipMmsi = new CopyOnWriteArrayList <Integer>();
 		shipHashMap = new ConcurrentHashMap<Integer, VirtualShip>();
 	}
 	
@@ -56,20 +54,6 @@ public class ReadMessage extends Thread {
 	public void chooseStream(String arg){
 		aisStream = arg;
 	}
-	
-	/**
-	 * 
-	 * @return ArrayList of current ship mmsi
-	 
-	public ArrayList<Integer> getShipMmsi(){	
-		ArrayList<Integer> tempShipMmsi = new ArrayList<Integer>();
-		
-		for (Integer mmsi : shipMmsi){
-			tempShipMmsi.add(mmsi);
-		}
-		
-		return tempShipMmsi;
-	}*/
 	
 	/**
 	 * 
@@ -100,7 +84,7 @@ public class ReadMessage extends Thread {
 			ship = new VirtualShip();
 			ship.setNode(String.valueOf(mmsi));
 			
-			   /**
+			 /**
 		     * GPS Ant. Distance from stern (B) Reference point for reported position. Also indicates the dimension of ship (m)
 		     * (see Fig. 42 and § 3.3.3)
 		     * 
@@ -160,7 +144,6 @@ public class ReadMessage extends Thread {
 			AisPositionMessage posMessage = (AisPositionMessage)aisMessage;
 			Position position = posMessage.getPos().getGeoLocation();
 	        try {
-                        //System.out.println(posMessage.toString());
 	        	ship.setShipLatitude(position.getLatitude());
 	        	ship.setShipLongitude(position.getLongitude());
 	        } catch(NullPointerException e) {
@@ -177,7 +160,7 @@ public class ReadMessage extends Thread {
 	    	AisPositionMessage positionMessage = (AisPositionMessage)aisMessage;
 	    	try {
 	    		int heading = positionMessage.getTrueHeading();
-	    		if (heading > 3599 ) {
+	    		if (heading > 359 ) {
 	    			heading = 0;
 	    		}
 	    		ship.setShipHeading(heading);
@@ -187,15 +170,13 @@ public class ReadMessage extends Thread {
 	    	}
 	    }
             
-            
-            /**
-             * Speed
-             */
-            if (aisMessage instanceof AisPositionMessage) {
+        /**
+         * Speed
+         */
+        if (aisMessage instanceof AisPositionMessage) {
 	    	AisPositionMessage positionMessage = (AisPositionMessage)aisMessage;
 	    	try {
-                        int speedOverGround = positionMessage.getSog();
-	    		
+                int speedOverGround = positionMessage.getSog();
 	    		ship.setForwardSpeed(Math.ceil((double)speedOverGround/100.0));
 	    		
 	    	} catch(NullPointerException e) {
@@ -205,8 +186,6 @@ public class ReadMessage extends Thread {
             
 	    // Add/update the HashMap, add to list
 		shipHashMap.put(mmsi, ship);
-                
-		//if (!shipMmsi.contains(mmsi)) shipMmsi.add(mmsi);
 	}
 	
 	/**
