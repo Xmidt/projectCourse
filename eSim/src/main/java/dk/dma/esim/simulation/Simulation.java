@@ -39,9 +39,10 @@ public class Simulation extends SimpleApplication implements ActionListener {
         aps.setResolution(1024, 768);
         app.setSettings(aps);
         app.showSettings = false;
+        app.setDisplayFps(true);
         app.start();
     }
-
+    
     /**
      * This is the main class for JME Defines all the settings for the engine.
      *
@@ -56,6 +57,7 @@ public class Simulation extends SimpleApplication implements ActionListener {
     public void simpleInitApp() {
 
         try {
+            
             /*
              * Locally variables used for testing
              * 
@@ -64,7 +66,7 @@ public class Simulation extends SimpleApplication implements ActionListener {
              */
             latitude = 55.4149920f;
             longitude = 12.3649320f;
-
+            
             /*
              * Creating a single camera node
              */
@@ -191,7 +193,7 @@ public class Simulation extends SimpleApplication implements ActionListener {
      */
     @Override
     public void simpleUpdate(float tpf) {
-
+        
         //  Insert or remove ships from ais message information
         if (!readingAis) {
             try {
@@ -207,14 +209,14 @@ public class Simulation extends SimpleApplication implements ActionListener {
         try {
 
             if (actor != null && actor.isValid()) {	
-                actor.update();
+                actor.update(tpf);
                 compass.rotate(actor.getNode().getLocalRotation());
             }
 
             for(VirtualShip virtualAisShip : readAisMessage.getShipHashMap().values()){
                 virtualAisShip.update();
                 
-                virtualAisShip.getNode().getLocalTranslation();
+                //virtualAisShip.getNode().getLocalTranslation(); //what?
                 
             }
 

@@ -30,7 +30,8 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
     protected Material material;
     protected double forwardSpeed;
     protected boolean valid;
-    //protected double rot;
+    protected double turning;
+    protected boolean isTurning;
     
     protected Integer shipHeading;
     protected Integer shipType;
@@ -179,10 +180,24 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
     }
 
     public void incrementRudder() {
+        if (this.rudderAngle == 0){
+        	this.isTurning = false;
+        } 
+        else {
+        	this.isTurning = true;
+        }
+    	this.turning = 0;
         this.rudderAngle+=this.rudderTurnRate;
     }
 
     public void decrementRudder() {
+        if (this.rudderAngle == 0){
+        	this.isTurning = false;
+        } 
+        else {
+        	this.isTurning = true;
+        }
+    	this.turning = 0;
         this.rudderAngle-=this.rudderTurnRate;
     }
 
@@ -202,16 +217,26 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
         return this.node;
     }
     
-    public void update() {
+    public void update(){
+        Vector3f v = this.node.getLocalTranslation();
+        Vector3f o = this.node.getLocalRotation().getRotationColumn(2);
+  
+        this.node.rotate(0f, (float)this.rudderAngle * 0.001f * (float)this.forwardSpeed, 0.0f);
+        this.node.setLocalTranslation(v.add(o.mult(0.1f * (float)this.forwardSpeed)));
+    }
+    
+    public void update(float tpf) {
+        //tpf is the time-per-frame from JME.
+        Vector3f v = this.node.getLocalTranslation();
+        Vector3f o = this.node.getLocalRotation().getRotationColumn(2);
 
-//        Vector3f v = this.node.getLocalTranslation();
-//        Vector3f o = this.node.getLocalRotation().getRotationColumn(2);
-//
-        
-        //this.node.rotate(0f, (float)this.rudderAngle * 0.001f * (float)this.forwardSpeed, 0.0f);
-        Quaternion q = new Quaternion();
-        this.node.rotate(q);
-//        this.node.setLocalTranslation(v.add(o.mult(0.1f * (float)this.forwardSpeed)));
+        if(isTurning){
+            this.node.rotate(0f, (float) getRot(turning)*tpf, 0.0f);
+            turning+=tpf;
+        }
+        //Quaternion q = new Quaternion();
+        //this.node.rotate(q);
+        this.node.setLocalTranslation(v.add(o.mult(0.1f * (float)this.forwardSpeed)));
         
     }
     

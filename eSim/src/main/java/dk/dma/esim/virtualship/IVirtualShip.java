@@ -281,6 +281,14 @@ public interface IVirtualShip {
     public void update();
     
     /**
+     * Updates the ships location in the 3D rendered world.
+     * 
+     * Also increment or decrement the ship speed, and current rudder angle.
+     * @param tpf the "time per frame" calculated by JME.
+     */
+    
+    public void update(float tpf);
+    /**
      * 
      * @return true if ship is shown in the 3D rendered world
      */
