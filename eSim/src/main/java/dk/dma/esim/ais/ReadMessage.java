@@ -48,11 +48,12 @@ public class ReadMessage extends Thread {
 	 * Choose between two types of streaming AisMessage
 	 * 	file: reading ais message from a file, usefull for debuggin
 	 * 	tcp: reading ais message trough the dma proxy
-	 * 
-	 * @param arg, type of stream
-	 */
-	public void chooseStream(String arg){
-		aisStream = arg;
+	 */	
+	public void setStreamTCP(){
+		aisStream = "TCP";
+	}
+	public void setStreamFile(){
+		aisStream = "file";
 	}
 	
 	/**
