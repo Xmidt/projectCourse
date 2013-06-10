@@ -107,6 +107,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
              * Starting the AisMessage reading thread
              */
             readAisMessage = new ReadMessage();
+            readAisMessage.setStreamFile();
             readAisMessage.start();
 
             /*
@@ -314,6 +315,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
                     // Ship coordinates for the virtual world
                     float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLongitude());
                     float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLatitude());
+                    
 
                     // Model settings
                     aisShip.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
@@ -332,11 +334,10 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
                     // Attach the ship node, to the node containing all the real ships in the virtual world
                     rootNode.attachChild(aisShip.getNode());
-
                 }
             } else {
 
-                // If the ship is out of draw distance, remove it
+                // If the ship is out of draw distance by geographical coordinates, remove it
                 rootNode.detachChild(aisShip.getNode());
             }
         }
@@ -405,11 +406,13 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
                 // ship speed increment
             } else if (binding.equals("Ups")) {
-                speedUpShip(1);
+
+            	speedUpShip("1");
 
                 // ship speed decrement
             } else if (binding.equals("Downs")) {
-                speedDownShip(1);
+
+                speedDownShip("1");
 
                 // draw the user controlled boat
             } else if (binding.equals("Space")) {
@@ -440,42 +443,43 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             }
         }
     }
-
-    public void speedUpShip(Integer val) {
-        actor.setForwardSpeed(actor.getForwardSpeed() + val);
-        System.out.println("MOVING FORWARD");
+    
+    public void speedUpShip(String val){
+        actor.setForwardSpeed(actor.getForwardSpeed() + Integer.parseInt(val));
 
         // find old text
-        Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_info");
+        Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_text");
         // swap old with new text
         String newVal = "SOG: " + actor.getForwardSpeed();
-        System.out.println(newVal);
-        System.out.println(niftyElement.getId());
-
         niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
 
-    public void speedDownShip(Integer val) {
-        actor.setForwardSpeed(actor.getForwardSpeed() - val);
-
-        System.out.println("MOVING BACKWARDS");
+    public void speedDownShip(String val){
+        actor.setForwardSpeed(actor.getForwardSpeed() - Integer.parseInt(val));
 
         // find old text
-        Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_info");
+        Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_text");
         // swap old with new text
         String newVal = "SOG: " + actor.getForwardSpeed();
-        System.out.println(newVal);
-        System.out.println(niftyElement.getId());
-
         niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
 
-    public void rudderLeft() {
-        actor.incrementRudder();
+    public void rudderLeft(){
+    	actor.incrementRudder();
+
+    	Element niftyElement = nifty.getCurrentScreen().findElementByName("rud_text");
+        // swap old with new text
+        String newVal = "Rudder: " + actor.getRudderAngle();
+        niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
 
-    public void rudderRight() {
-        actor.decrementRudder();
+    public void rudderRight(){
+    	actor.decrementRudder();
+
+    	Element niftyElement = nifty.getCurrentScreen().findElementByName("rud_text");
+        // swap old with new text
+        String newVal = "Rudder: " + actor.getRudderAngle();
+        niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
 
     public void bind(Nifty arg0, Screen arg1) {
