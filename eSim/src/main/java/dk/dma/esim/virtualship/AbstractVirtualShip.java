@@ -41,7 +41,7 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
         this.node = new Node();
         this.length = 30;
         this.width = 10;
-        this.mass = 0;
+        this.mass = 2000;
         this.speed = 0;
         this.cog = 0;
         this.forwardSpeed = 0;
@@ -234,8 +234,7 @@ public abstract class AbstractVirtualShip implements IVirtualShip {
             this.node.rotate(0f, (float) getRot(turning)*tpf, 0.0f);
             turning+=tpf;
         }
-        //Quaternion q = new Quaternion();
-        //this.node.rotate(q);
+        
         this.node.setLocalTranslation(v.add(o.mult(0.1f * (float)this.forwardSpeed)));
         
     }

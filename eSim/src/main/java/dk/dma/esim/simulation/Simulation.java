@@ -62,7 +62,7 @@ public class Simulation extends SimpleApplication implements ActionListener {
              * Locally variables used for testing
              * 
              * Latitude and longitude variables are used to define origin.
-             * 	The length of 1 minute of latitude is 1.853 km (a nautical mile)
+             *
              */
             latitude = 55.4149920f;
             longitude = 12.3649320f;
@@ -333,7 +333,7 @@ public class Simulation extends SimpleApplication implements ActionListener {
         inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addMapping("ToggleCamera", new KeyTrigger(KeyInput.KEY_X));
-        inputManager.addMapping("ToggleWater", new KeyTrigger(KeyInput.KEY_V));
+        //inputManager.addMapping("ToggleWater", new KeyTrigger(KeyInput.KEY_V));
         inputManager.addMapping("InfoDump", new KeyTrigger(KeyInput.KEY_I));
         inputManager.addMapping("InfoDumpAisMessage", new KeyTrigger(KeyInput.KEY_O));
         inputManager.addListener(this, "Lefts");
