@@ -481,7 +481,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         String newVal = "Rudder: " + actor.getRudderAngle();
         niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
-
+    
     public void bind(Nifty arg0, Screen arg1) {
         // TODO Auto-generated method stub
     }
