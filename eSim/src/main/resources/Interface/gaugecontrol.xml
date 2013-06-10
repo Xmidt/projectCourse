@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nifty>
+  <useStyles filename="nifty-default-styles.xml" />
+  <useControls filename="nifty-default-controls.xml" />
+  <screen id="hud" controller="dk.dma.esim.simulation.Simulation">
+    <layer id="foreground" backgroundColor="#0000" childLayout="vertical">
+
+      <panel id="panel_left" width="100%" height="80%" childLayout="vertical" >  
+        <!-- spacer -->
+      </panel>
+
+      <panel id="controls" width="100%" height="20%" childLayout="horizontal" >
+
+        <panel id="speed_ctrl" width="33%" height="100%" childLayout="vertical" >  
+	        <panel id="acc_panel" width="100%" height="50%" childLayout="center" >  
+	          <control name="button" label="Accelerate" id="AccelerationButton" align="center" valign="center" width="75%" height="75%" visibleToMouse="true"> 
+	            <interact onClick="speedUpShip(1)"/>
+    	      </control>	          
+	        </panel>
+	        <panel id="dec_panel" width="100%" height="50%" childLayout="center" >  
+	          <control name="button" label="Decelerate" id="DecelerationButton" align="center" valign="center" width="75%" height="75%" visibleToMouse="true"> 
+	            <interact onClick="speedDownShip(1)"/>
+    	      </control>	          
+	        </panel>
+        </panel>
+        
+        <panel id="rud_ctrl" width="33%" height="100%" childLayout="horizontal">  
+	        <panel id="left_panel" width="50%" height="100%" childLayout="center" >  
+	          <control name="button" label="Turn Left" id="RudderLeftButton" align="center" valign="center" width="75%" height="25%" visibleToMouse="true"> 
+	            <interact onClick="rudderLeft()"/>
+    	      </control>	          
+	        </panel>
+	        <panel id="right_panel" width="50%" height="100%" childLayout="center" >  
+	          <control name="button" label="Turn Right" id="RudderRightButton" align="center" valign="center" width="75%" height="25%" visibleToMouse="true"> 
+	            <interact onClick="rudderRight()"/>
+    	      </control>	          
+	        </panel>
+        </panel>
+
+        <panel id="info" width="33%" height="100%" childLayout="vertical">  
+	        <panel id="sog_info" width="100%" height="50%" childLayout="center" >  
+          <text text="SOG: 0" font="Interface/Fonts/Default.fnt" width="100%" height="100%" />
+	        </panel>
+	        <panel id="rud_info" width="100%" height="50%" childLayout="center" >  
+          <text text="Rudder: 0" font="Interface/Fonts/Default.fnt" width="100%" height="100%" />
+          
+	        </panel>
+        </panel>
+        
+      </panel>
+
+    </layer>
+  </screen>
+
+</nifty>
