@@ -396,11 +396,11 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
                 // ship speed increment
             } else if (binding.equals("Ups")) {
-            	speedUpShip(1);
+            	speedUpShip("1");
 
             	// ship speed decrement
             } else if (binding.equals("Downs")) {
-            	speedDownShip(1);
+            	speedDownShip("1");
 
             	// draw the user controlled boat
             } else if (binding.equals("Space")) {
@@ -432,41 +432,46 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         }
     }
     
-    public void speedUpShip(Integer val){
-        actor.setForwardSpeed(actor.getForwardSpeed() + val);
-        System.out.println("MOVING FORWARD");
+    public void something(String inp){
+    	System.out.println("Got " + inp);
+    }
+    
+    public void speedUpShip(String val){
+        actor.setForwardSpeed(actor.getForwardSpeed() + Integer.parseInt(val));
 
         // find old text
-        Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_info");
+        Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_text");
         // swap old with new text
         String newVal = "SOG: " + actor.getForwardSpeed();
-        System.out.println(newVal);
-        System.out.println(niftyElement.getId());
-        
         niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
 
-    public void speedDownShip(Integer val){
-    	actor.setForwardSpeed(actor.getForwardSpeed() - val);
-
-    	System.out.println("MOVING BACKWARDS");
+    public void speedDownShip(String val){
+        actor.setForwardSpeed(actor.getForwardSpeed() + Integer.parseInt(val));
 
         // find old text
-        Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_info");
+        Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_text");
         // swap old with new text
         String newVal = "SOG: " + actor.getForwardSpeed();
-        System.out.println(newVal);
-        System.out.println(niftyElement.getId());
-        
         niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
 
     public void rudderLeft(){
     	actor.incrementRudder();
+
+    	Element niftyElement = nifty.getCurrentScreen().findElementByName("rud_text");
+        // swap old with new text
+        String newVal = "Rudder: " + actor.getRudderAngle();
+        niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
 
     public void rudderRight(){
     	actor.decrementRudder();
+
+    	Element niftyElement = nifty.getCurrentScreen().findElementByName("rud_text");
+        // swap old with new text
+        String newVal = "Rudder: " + actor.getRudderAngle();
+        niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
     
     

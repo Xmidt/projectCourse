@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<nifty>
+<nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
   <useStyles filename="nifty-default-styles.xml" />
   <useControls filename="nifty-default-controls.xml" />
   <screen id="hud" controller="dk.dma.esim.simulation.Simulation">
@@ -14,12 +14,12 @@
         <panel id="speed_ctrl" width="33%" height="100%" childLayout="vertical" >  
 	        <panel id="acc_panel" width="100%" height="50%" childLayout="center" >  
 	          <control name="button" label="Accelerate" id="AccelerationButton" align="center" valign="center" width="75%" height="75%" visibleToMouse="true"> 
-	            <interact onClick="speedUpShip(1)"/>
+	            <interact onClick="speedUpShip(2)"/>
     	      </control>	          
 	        </panel>
 	        <panel id="dec_panel" width="100%" height="50%" childLayout="center" >  
 	          <control name="button" label="Decelerate" id="DecelerationButton" align="center" valign="center" width="75%" height="75%" visibleToMouse="true"> 
-	            <interact onClick="speedDownShip(1)"/>
+	            <interact onClick="speedDownShip(2)"/>
     	      </control>	          
 	        </panel>
         </panel>
@@ -39,11 +39,10 @@
 
         <panel id="info" width="33%" height="100%" childLayout="vertical">  
 	        <panel id="sog_info" width="100%" height="50%" childLayout="center" >  
-          <text text="SOG: 0" font="Interface/Fonts/Default.fnt" width="100%" height="100%" />
+          <text id="sog_text" text="SOG: 0" font="Interface/Fonts/Default.fnt" width="100%" height="100%" />
 	        </panel>
 	        <panel id="rud_info" width="100%" height="50%" childLayout="center" >  
-          <text text="Rudder: 0" font="Interface/Fonts/Default.fnt" width="100%" height="100%" />
-          
+          <text id="rud_text" text="Rudder: 0" font="Interface/Fonts/Default.fnt" width="100%" height="100%" />
 	        </panel>
         </panel>
         
