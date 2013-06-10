@@ -448,7 +448,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     }
 
     public void speedDownShip(String val){
-        actor.setForwardSpeed(actor.getForwardSpeed() + Integer.parseInt(val));
+        actor.setForwardSpeed(actor.getForwardSpeed() - Integer.parseInt(val));
 
         // find old text
         Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_text");
