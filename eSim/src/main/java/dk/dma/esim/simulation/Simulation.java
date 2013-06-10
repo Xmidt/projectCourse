@@ -82,6 +82,7 @@ public class Simulation extends SimpleApplication implements ActionListener {
              * Starting the AisMessage reading thread
              */
             readAisMessage = new ReadMessage();
+            readAisMessage.setStreamFile();
             readAisMessage.start();
 
             /*
@@ -274,6 +275,7 @@ public class Simulation extends SimpleApplication implements ActionListener {
                     // Ship coordinates for the virtual world
                     float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLongitude());
                     float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLatitude());
+                    
 
                     // Model settings
                     aisShip.setSpatial(assetManager.loadModel("Shipmodels/josy/josy.j3o"));
@@ -292,11 +294,10 @@ public class Simulation extends SimpleApplication implements ActionListener {
 
                     // Attach the ship node, to the node containing all the real ships in the virtual world
                     rootNode.attachChild(aisShip.getNode());
-
                 }
             } else {
 
-                // If the ship is out of draw distance, remove it
+                // If the ship is out of draw distance by geographical coordinates, remove it
                 rootNode.detachChild(aisShip.getNode());
             }
         }

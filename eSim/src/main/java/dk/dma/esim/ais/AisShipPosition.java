@@ -56,6 +56,16 @@ public class AisShipPosition {
 		}
 	}
 	
+	public boolean checkVirtual(float virtualX, float virtualZ, float aisX, float aisZ) {
+		float diffX = Math.abs(virtualX - aisX);
+		float diffZ = Math.abs(virtualZ - aisZ);
+		if (diffX < drawDistance * scale && diffZ < drawDistance * scale) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	/**
 	 * Calculates the virtual ship "new" geographical coordinates,
 	 * by using the initiated geographical coordinates defined in the constructor as a reference point,
