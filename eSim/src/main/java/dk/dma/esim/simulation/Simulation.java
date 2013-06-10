@@ -22,8 +22,11 @@ import de.lessvoid.nifty.screen.ScreenController;
 import dk.dma.esim.ais.AisShipPosition;
 import dk.dma.esim.ais.ReadMessage;
 import dk.dma.esim.gui.Compass;
+import dk.dma.esim.gui.StartMenu;
 import dk.dma.esim.virtualship.VirtualShip;
 import dk.dma.esim.virtualworld.VirtualWorld;
+import java.awt.Frame;
+import javax.swing.JDialog;
 
 public class Simulation extends SimpleApplication implements ActionListener, ScreenController {
 
@@ -40,20 +43,24 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     private Nifty nifty;
     private Screen screen;
     private SimpleApplication app;
-       
-    
+    private static StartMenu menu;
 
     public static void main(String[] args) {
         Simulation app = new Simulation();
         AppSettings aps = new AppSettings(true);
+        menu = new StartMenu(new Frame(), true); //boolean decides if execution blocks
+        menu.setVisible(true);
+
         aps.setFrameRate(60);
         aps.setResolution(1024, 768);
         app.setSettings(aps);
-        app.showSettings = false;
+        app.setShowSettings(false);
         app.setDisplayFps(true);
+
+
         app.start();
     }
-    
+
     /**
      * This is the main class for JME Defines all the settings for the engine.
      *
@@ -68,16 +75,23 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
     public void simpleInitApp() {
 
         try {
-            
+
             /*
              * Locally variables used for testing
              * 
              * Latitude and longitude variables are used to define origin.
              *
              */
-            latitude = 55.4149920f;
-            longitude = 12.3649320f;
-            
+            try {
+                latitude = menu.getLatitude();
+                longitude = menu.getLongitude();
+            } catch (Exception e) {
+                latitude = 55.4149920f;
+                longitude = 12.3649320f;
+            }
+
+
+
             /*
              * Creating a single camera node
              */
@@ -197,25 +211,20 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         }
     }
 
-    
-    public void setupHUD(){
+    public void setupHUD() {
         NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager,
                 inputManager,
                 audioRenderer,
                 guiViewPort);
-        
+
         nifty = niftyDisplay.getNifty();
         nifty.fromXml("Interface/gaugecontrol.xml", "hud", this);
 
         // attach the nifty display to the gui view port as a processor
         guiViewPort.addProcessor(niftyDisplay);
-    	
+
     }
-    
-    
-    
-    
-    
+
     /**
      * JME updates itself depending on the current frame rate.
      *
@@ -224,14 +233,14 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
      */
     @Override
     public void simpleUpdate(float tpf) {
-        
+
         //  Insert or remove ships from ais message information
         if (!readingAis) {
             try {
-            	drawAisShip();
-	        } catch (NullPointerException e) {
-	            // Stream list is not yet ready
-	        }
+                drawAisShip();
+            } catch (NullPointerException e) {
+                // Stream list is not yet ready
+            }
         }
 
         /**
@@ -239,16 +248,16 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
          */
         try {
 
-            if (actor != null && actor.isValid()) {	
+            if (actor != null && actor.isValid()) {
                 actor.update(tpf);
                 compass.rotate(actor.getNode().getLocalRotation());
             }
 
-            for(VirtualShip virtualAisShip : readAisMessage.getShipHashMap().values()){
+            for (VirtualShip virtualAisShip : readAisMessage.getShipHashMap().values()) {
                 virtualAisShip.update();
-                
+
                 //virtualAisShip.getNode().getLocalTranslation(); //what?
-                
+
             }
 
         } catch (Exception e) {
@@ -286,7 +295,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         /**
          * Loops over all the mmsi (ship unique id) currently in the ArrayList
          */
-        for (Integer mmsi : hashMap.keySet()){//sshipMMSI) {
+        for (Integer mmsi : hashMap.keySet()) {//sshipMMSI) {
 
             VirtualShip aisShip = hashMap.get(mmsi);
 
@@ -297,11 +306,11 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             if (coordinates.checkAis(aisShip.getShipLatitude(), aisShip.getShipLongitude())) {
 
                 /**
-                 * Checks if the node already exists, if not -> insert the
-                 * real ship in the virtual world
+                 * Checks if the node already exists, if not -> insert the real
+                 * ship in the virtual world
                  */
                 if (!rootNode.hasChild(aisShip.getNode())) {
-                    
+
                     // Ship coordinates for the virtual world
                     float aisShipSpatialX = coordinates.getAisSpatialX(aisShip.getShipLongitude());
                     float aisShipSpatialZ = coordinates.getAisSpatialZ(aisShip.getShipLatitude());
@@ -313,7 +322,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
                     // Rotate the ais ship, if information is available
                     Quaternion yAxes = new Quaternion();
-                    float shipHeadingRadian = (float) Math.toRadians(aisShip.getShipHeading()/10);
+                    float shipHeadingRadian = (float) Math.toRadians(aisShip.getShipHeading() / 10);
                     yAxes.fromAngleAxis((-1 * (shipHeadingRadian + FastMath.HALF_PI)), Vector3f.UNIT_Y);
                     aisShip.getSpatial().rotate(yAxes);
                     aisShip.getNode().setLocalRotation(yAxes);
@@ -387,7 +396,7 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             // Ship turning
             if (binding.equals("Lefts")) {
 
-            	rudderLeft();
+                rudderLeft();
 
                 // Ship turning
             } else if (binding.equals("Rights")) {
@@ -396,13 +405,13 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
 
                 // ship speed increment
             } else if (binding.equals("Ups")) {
-            	speedUpShip(1);
+                speedUpShip(1);
 
-            	// ship speed decrement
+                // ship speed decrement
             } else if (binding.equals("Downs")) {
-            	speedDownShip(1);
+                speedDownShip(1);
 
-            	// draw the user controlled boat
+                // draw the user controlled boat
             } else if (binding.equals("Space")) {
 
                 if (actor == null) {
@@ -431,8 +440,8 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
             }
         }
     }
-    
-    public void speedUpShip(Integer val){
+
+    public void speedUpShip(Integer val) {
         actor.setForwardSpeed(actor.getForwardSpeed() + val);
         System.out.println("MOVING FORWARD");
 
@@ -442,14 +451,14 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         String newVal = "SOG: " + actor.getForwardSpeed();
         System.out.println(newVal);
         System.out.println(niftyElement.getId());
-        
+
         niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
 
-    public void speedDownShip(Integer val){
-    	actor.setForwardSpeed(actor.getForwardSpeed() - val);
+    public void speedDownShip(Integer val) {
+        actor.setForwardSpeed(actor.getForwardSpeed() - val);
 
-    	System.out.println("MOVING BACKWARDS");
+        System.out.println("MOVING BACKWARDS");
 
         // find old text
         Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_info");
@@ -457,32 +466,33 @@ public class Simulation extends SimpleApplication implements ActionListener, Scr
         String newVal = "SOG: " + actor.getForwardSpeed();
         System.out.println(newVal);
         System.out.println(niftyElement.getId());
-        
+
         niftyElement.getRenderer(TextRenderer.class).setText(newVal);
     }
 
-    public void rudderLeft(){
-    	actor.incrementRudder();
+    public void rudderLeft() {
+        actor.incrementRudder();
     }
 
-    public void rudderRight(){
-    	actor.decrementRudder();
+    public void rudderRight() {
+        actor.decrementRudder();
+    }
+
+    public void bind(Nifty arg0, Screen arg1) {
+        // TODO Auto-generated method stub
+    }
+
+    public void onEndScreen() {
+        // TODO Auto-generated method stub
     }
     
-    
-	public void bind(Nifty arg0, Screen arg1) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void destroy() {
+        
+        System.exit(0);
+    }
 
-	public void onEndScreen() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onStartScreen() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
+    public void onStartScreen() {
+        // TODO Auto-generated method stub
+    }
 }
