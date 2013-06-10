@@ -9,17 +9,23 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.control.CameraControl;
 import com.jme3.system.AppSettings;
 
+import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.elements.Element;
+import de.lessvoid.nifty.elements.render.TextRenderer;
+import de.lessvoid.nifty.screen.Screen;
+import de.lessvoid.nifty.screen.ScreenController;
 import dk.dma.esim.ais.AisShipPosition;
 import dk.dma.esim.ais.ReadMessage;
 import dk.dma.esim.gui.Compass;
 import dk.dma.esim.virtualship.VirtualShip;
 import dk.dma.esim.virtualworld.VirtualWorld;
 
-public class Simulation extends SimpleApplication implements ActionListener {
+public class Simulation extends SimpleApplication implements ActionListener, ScreenController {
 
     private float latitude;
     private float longitude;
@@ -31,6 +37,11 @@ public class Simulation extends SimpleApplication implements ActionListener {
     private AisShipPosition coordinates;
     private ReadMessage readAisMessage;
     private boolean readingAis = false;
+    private Nifty nifty;
+    private Screen screen;
+    private SimpleApplication app;
+       
+    
 
     public static void main(String[] args) {
         Simulation app = new Simulation();
@@ -91,6 +102,7 @@ public class Simulation extends SimpleApplication implements ActionListener {
             setupKeys();
             buildBoat();						// Set boat
             toggleCamera();						// set brigde view
+            setupHUD();							// set up nifty GUI
 
             coordinates = new AisShipPosition(latitude, longitude);
 
@@ -185,6 +197,25 @@ public class Simulation extends SimpleApplication implements ActionListener {
         }
     }
 
+    
+    public void setupHUD(){
+        NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager,
+                inputManager,
+                audioRenderer,
+                guiViewPort);
+        
+        nifty = niftyDisplay.getNifty();
+        nifty.fromXml("Interface/gaugecontrol.xml", "hud", this);
+
+        // attach the nifty display to the gui view port as a processor
+        guiViewPort.addProcessor(niftyDisplay);
+    	
+    }
+    
+    
+    
+    
+    
     /**
      * JME updates itself depending on the current frame rate.
      *
@@ -356,24 +387,22 @@ public class Simulation extends SimpleApplication implements ActionListener {
             // Ship turning
             if (binding.equals("Lefts")) {
 
-                actor.incrementRudder();
+            	rudderLeft();
 
                 // Ship turning
             } else if (binding.equals("Rights")) {
 
-                actor.decrementRudder();
+                rudderRight();
 
                 // ship speed increment
             } else if (binding.equals("Ups")) {
+            	speedUpShip(1);
 
-                actor.setForwardSpeed(actor.getForwardSpeed() + 1); //make proper method
-
-                // ship speed decrement
+            	// ship speed decrement
             } else if (binding.equals("Downs")) {
+            	speedDownShip(1);
 
-                actor.setForwardSpeed(actor.getForwardSpeed() - 1);
-
-                // draw the user controlled boat
+            	// draw the user controlled boat
             } else if (binding.equals("Space")) {
 
                 if (actor == null) {
@@ -402,6 +431,58 @@ public class Simulation extends SimpleApplication implements ActionListener {
             }
         }
     }
+    
+    public void speedUpShip(Integer val){
+        actor.setForwardSpeed(actor.getForwardSpeed() + val);
+        System.out.println("MOVING FORWARD");
+
+        // find old text
+        Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_info");
+        // swap old with new text
+        String newVal = "SOG: " + actor.getForwardSpeed();
+        System.out.println(newVal);
+        System.out.println(niftyElement.getId());
+        
+        niftyElement.getRenderer(TextRenderer.class).setText(newVal);
+    }
+
+    public void speedDownShip(Integer val){
+    	actor.setForwardSpeed(actor.getForwardSpeed() - val);
+
+    	System.out.println("MOVING BACKWARDS");
+
+        // find old text
+        Element niftyElement = nifty.getCurrentScreen().findElementByName("sog_info");
+        // swap old with new text
+        String newVal = "SOG: " + actor.getForwardSpeed();
+        System.out.println(newVal);
+        System.out.println(niftyElement.getId());
+        
+        niftyElement.getRenderer(TextRenderer.class).setText(newVal);
+    }
+
+    public void rudderLeft(){
+    	actor.incrementRudder();
+    }
+
+    public void rudderRight(){
+    	actor.decrementRudder();
+    }
+    
+    
+	public void bind(Nifty arg0, Screen arg1) {
+		// TODO Auto-generated method stub
+	}
+
+	public void onEndScreen() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onStartScreen() {
+		// TODO Auto-generated method stub
+		
+	}
 
 
 }
